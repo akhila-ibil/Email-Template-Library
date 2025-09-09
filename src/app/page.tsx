@@ -1,11 +1,13 @@
-import Link from 'next/link';
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>Email Template Editor</h1>
-      <p>Build email content with + buttons.</p>
-      <Link href="/editor">Open Editor →</Link>
-    </main>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/email-editor');
+  }, [router]);
+
+  return null;
 }
