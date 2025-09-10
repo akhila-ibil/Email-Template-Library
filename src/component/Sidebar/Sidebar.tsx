@@ -1,12 +1,12 @@
 import React from 'react';
 
 type SidebarProps = {
-  onDragStart: (e: React.DragEvent, type: 'heading' | 'paragraph' | 'image') => void;
+  onDragStart: (e: React.DragEvent, type: 'heading' | 'paragraph' | 'image' | 'button' | 'divider' | 'spacer') => void;
 };
 
 export default function Sidebar({ onDragStart }: SidebarProps) {
   return (
-    <div className="w-56 border-r border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
+    <div className="w-72 border-r border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
       <div className="font-bold mb-3 text-gray-800">Blocks</div>
 
       <div
@@ -14,7 +14,7 @@ export default function Sidebar({ onDragStart }: SidebarProps) {
         draggable
         onDragStart={(e) => onDragStart(e, 'heading')}
       >
-        +{' '}
+        {' '}
         <span>
           <img src="/heading.svg" alt="Heading" className="w-5 h-5 mx-1" />
         </span>{' '}
@@ -26,7 +26,6 @@ export default function Sidebar({ onDragStart }: SidebarProps) {
         draggable
         onDragStart={(e) => onDragStart(e, 'paragraph')}
       >
-        +
         <span>
           <img src="/paragraph.svg" alt="Paragraph" className="w-5 h-5 mx-1" />
         </span>{' '}
@@ -38,11 +37,45 @@ export default function Sidebar({ onDragStart }: SidebarProps) {
         draggable
         onDragStart={(e) => onDragStart(e, 'image')}
       >
-        +
         <span>
           <img src="/image.svg" alt="Image" className="w-5 h-5 mx-1" />
         </span>{' '}
         Image
+      </div>
+      <div
+        className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab flex hover:bg-gray-100 transition-colors"
+        draggable
+        onDragStart={(e) => onDragStart(e, 'button')}
+      >
+        {' '}
+        <span>
+          <img src="/button.svg" alt="Image" className="w-5 h-6 mx-1" />
+        </span>{' '}
+        Button
+      </div>
+
+      <div
+        className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab flex hover:bg-gray-100 transition-colors"
+        draggable
+        onDragStart={(e) => onDragStart(e, 'divider')}
+      >
+        {' '}
+        <span>
+          <img src="/divider.svg" alt="Image" className="w-5 h-6 mx-1" />
+        </span>{' '}
+        Divider
+      </div>
+
+      <div
+        className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab flex hover:bg-gray-100 transition-colors"
+        draggable
+        onDragStart={(e) => onDragStart(e, 'spacer')}
+      >
+        {' '}
+        <span>
+          <img src="/spacer.svg" alt="Image" className="w-5 h-5 mx-1" />
+        </span>{' '}
+        Spacer
       </div>
 
       <div className="mt-4 text-gray-500 text-xs">

@@ -76,6 +76,79 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close }) => {
             </div>
           </>
         )}
+        {block.type === 'button' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Button URL</label>
+              <input
+                type="url"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={block.url || ''}
+                onChange={(e) => updateBlock(block.id, { url: e.target.value })}
+                placeholder="https://example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={block.backgroundColor || '#007bff'}
+                onChange={(e) => updateBlock(block.id, { backgroundColor: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={block.textColor || '#ffffff'}
+                onChange={(e) => updateBlock(block.id, { textColor: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+
+        {block.type === 'divider' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Thickness (px)</label>
+              <input
+                type="number"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={block.thickness || 1}
+                min="1"
+                max="10"
+                onChange={(e) => updateBlock(block.id, { thickness: parseInt(e.target.value) || 1 })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={block.dividerColor || '#e5e7eb'}
+                onChange={(e) => updateBlock(block.id, { dividerColor: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+
+        {block.type === 'spacer' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+              <input
+                type="number"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={block.spacerHeight || 20}
+                min="5"
+                max="200"
+                onChange={(e) => updateBlock(block.id, { spacerHeight: parseInt(e.target.value) || 20 })}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

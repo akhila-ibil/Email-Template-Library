@@ -7,11 +7,17 @@ import React, { JSX, useEffect, useState } from 'react';
 
 export type Block = {
   id: string;
-  type: 'heading' | 'paragraph' | 'image';
+  type: 'heading' | 'paragraph' | 'image' | 'button' | 'divider' | 'spacer';
   level?: number; // for heading
   content?: string; // text or dataURL
   alt?: string; // image alt
   width?: number; // image width in px
+  url?: string; // buttonDragStartURL
+  backgroundColor?: string; // button background color
+  textColor?: string; // button text color
+  thickness?: number; // divider thickness
+  dividerColor?: string; // divider color
+  spacerHeight?: number; // spacer height
 };
 export default function TailwindEmailBuilder(): JSX.Element {
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -50,7 +56,20 @@ export default function TailwindEmailBuilder(): JSX.Element {
       id: Date.now().toString(),
       type,
       level: type === 'heading' ? 1 : undefined,
-      content: type === 'heading' ? 'New Heading' : type === 'paragraph' ? 'New paragraph text...' : '', // image content will be dataURL set later
+      content:
+        type === 'heading'
+          ? 'New Heading'
+          : type === 'paragraph'
+          ? 'New paragraph text...'
+          : type === 'button'
+          ? 'Click Me'
+          : '',
+      url: type === 'button' ? 'https://example.com' : undefined,
+      backgroundColor: type === 'button' ? '#007bff' : undefined,
+      textColor: type === 'button' ? '#ffffff' : undefined,
+      thickness: type === 'divider' ? 1 : undefined,
+      dividerColor: type === 'divider' ? '#e5e7eb' : undefined,
+      spacerHeight: type === 'spacer' ? 20 : undefined,
     };
     const copy = [...blocks];
     if (insertAt !== undefined) copy.splice(insertAt, 0, newBlock);
@@ -136,6 +155,22 @@ export default function TailwindEmailBuilder(): JSX.Element {
           const alt = b.alt ? ` alt="${escapeHtml(b.alt)}"` : ' alt=""';
           return `<img src="${b.content || ''}"${alt}${w} />`;
         }
+        if (b.type === 'button') {
+          const style = `background-color: ${b.backgroundColor || '#007bff'}; color: ${
+            b.textColor || '#ffffff'
+          }; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; border: none; cursor: pointer;`;
+          return `<a href="${b.url || '#'}" style="${style}">${escapeHtml(b.content || 'Button')}</a>`;
+        }
+        if (b.type === 'divider') {
+          const style = `height: ${b.thickness || 1}px; background-color: ${
+            b.dividerColor || '#e5e7eb'
+          }; border: none; margin: 20px 0;`;
+          return `<hr style="${style}" />`;
+        }
+        if (b.type === 'spacer') {
+          const style = `height: ${b.spacerHeight || 20}px;`;
+          return `<div style="${style}"></div>`;
+        }
         return '';
       })
       .join('\n');
@@ -178,12 +213,10 @@ export default function TailwindEmailBuilder(): JSX.Element {
         setBlocks={setBlocks}
         setInspecting={setInspecting}
       />
-
       {/* Main content area below navbar, height minus navbar (56px) */}
       <div className="flex" style={{ height: 'calc(100vh - 70px)' }}>
         {/* Sidebar */}
         <Sidebar onDragStart={onSidebarDragStart} />
-
         {/* Main Editor */}
         <div
           className={`flex-1 p-5 overflow-auto flex flex-col items-center`}
@@ -329,6 +362,64 @@ export default function TailwindEmailBuilder(): JSX.Element {
                         )}
                       </div>
                     )}
+                    {b.type === 'button' && (
+                      <div>
+                        <div className="mb-1.5 text-gray-500 text-xs">Button</div>
+
+                        {preview ? (
+                          <button
+                            className="px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity cursor-pointer inline-block"
+                            style={{
+                              backgroundColor: b.backgroundColor || '#007bff',
+                              color: b.textColor || '#ffffff',
+                            }}
+                            onClick={() => window.open(b.url, '_blank')}
+                          >
+                            {b.content || 'Button'}
+                          </button>
+                        ) : (
+                          <input
+                            type="text"
+                            className="px-6 py-3 rounded-md font-medium text-center focus:outline-none transition-all inline-block"
+                            style={{
+                              backgroundColor: b.backgroundColor || '#007bff',
+                              color: b.textColor || '#ffffff',
+                              border: '2px dashed rgba(156, 163, 175, 0.5)',
+                            }}
+                            placeholder="Button text"
+                            value={b.content || ''}
+                            onChange={(e) => updateBlock(b.id, { content: e.target.value })}
+                            onFocus={(e) => (e.target.style.border = '2px solid #3b82f6')}
+                            onBlur={(e) => (e.target.style.border = '2px dashed rgba(156, 163, 175, 0.5)')}
+                          />
+                        )}
+                      </div>
+                    )}
+                    {b.type === 'divider' && (
+                      <div>
+                        <div className="mb-1.5 text-gray-500 text-xs">Divider</div>
+                        <hr
+                          style={{
+                            height: `${b.thickness || 1}px`,
+                            backgroundColor: b.dividerColor || '#e5e7eb',
+                            border: 'none',
+                            margin: '20px 0',
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {b.type === 'spacer' && (
+                      <div>
+                        <div className="mb-1.5 text-gray-500 text-xs">Spacer</div>
+                        <div
+                          className="bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm"
+                          style={{ height: `${b.spacerHeight || 20}px` }}
+                        >
+                          {!preview && `${b.spacerHeight || 20}px`}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
 
@@ -393,7 +484,6 @@ export default function TailwindEmailBuilder(): JSX.Element {
             )}
           </div>
         </div>
-
         {/* Inspector Panel */}
         {inspecting && <Customize block={inspecting} updateBlock={updateBlock} close={() => setInspecting(null)} />}
       </div>
