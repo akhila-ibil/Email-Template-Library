@@ -184,27 +184,39 @@ export default function TailwindEmailBuilder(): JSX.Element {
           <div className="font-bold mb-3 text-gray-800">Blocks</div>
 
           <div
-            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab hover:bg-gray-100 transition-colors"
+            className="p-2 bg-gray-50 border border-gray-200 rounded-md flex mb-2 cursor-grab hover:bg-gray-100 transition-colors"
             draggable
             onDragStart={(e) => onSidebarDragStart(e, 'heading')}
           >
-            + Heading
+            +{' '}
+            <span>
+              <img src="/heading.svg" alt="Mobile" className="w-5 h-5 mx-1" />
+            </span>{' '}
+            Heading
           </div>
 
           <div
-            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab hover:bg-gray-100 transition-colors"
+            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2  flex cursor-grab hover:bg-gray-100 transition-colors"
             draggable
             onDragStart={(e) => onSidebarDragStart(e, 'paragraph')}
           >
-            + Paragraph
+            +
+            <span>
+              <img src="/paragraph.svg" alt="Mobile" className="w-5 h-5 mx-1" />
+            </span>{' '}
+            Paragraph
           </div>
 
           <div
-            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab hover:bg-gray-100 transition-colors"
+            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab flex hover:bg-gray-100 transition-colors"
             draggable
             onDragStart={(e) => onSidebarDragStart(e, 'image')}
           >
-            + Image
+            +
+            <span>
+              <img src="/image.svg" alt="Mobile" className="w-5 h-5 mx-1" />
+            </span>{' '}
+            Image
           </div>
 
           <div className="mt-4 text-gray-500 text-xs">
