@@ -246,161 +246,167 @@ export default function TailwindEmailBuilder(): JSX.Element {
             }`}
             style={viewMode === 'mobile' ? { minHeight: '600px' } : {}}
           >
-            {blocks.length === 0 && (
-              <div className="p-6 border border-dashed border-gray-300 rounded-md text-center text-gray-500 mb-3">
-                Drop blocks here or use the + Add Block menu below
-              </div>
-            )}
-
-            {blocks.map((b, i) => (
-              <div
-                key={b.id}
-                draggable={!preview}
-                onDragStart={(e) => onCanvasDragStart(e, i, b.id)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, i)}
-                className="relative border border-gray-200 p-3 rounded-md mb-3 bg-blue-50/30 hover:border-gray-300 transition-colors"
-              >
-                {/* Action Bar */}
-                {!preview && (
-                  <div className="absolute -top-9 right-1.5 flex gap-1.5">
-                    <button
-                      className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
-                      onClick={() => moveBlock(b.id, 'up')}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
-                      onClick={() => moveBlock(b.id, 'down')}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
-                      onClick={() => setInspecting(b)}
-                      title="Inspect"
-                    >
-                      ⚙
-                    </button>
-                    <button
-                      className="px-2 py-1.5 rounded-md border border-gray-300 bg-red-50 hover:bg-red-100 text-xs transition-colors"
-                      onClick={() => deleteBlock(b.id)}
-                    >
-                      ✕
-                    </button>
+            {preview ? (
+              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: exportHTML() }} />
+            ) : (
+              <>
+                {blocks.length === 0 && (
+                  <div className="p-6 border border-dashed border-gray-300 rounded-md text-center text-gray-500 mb-3">
+                    Drop blocks here or use the + Add Block menu below
                   </div>
                 )}
 
-                {/* Block Content */}
-                {b.type === 'heading' && (
-                  <div>
-                    <div className="mb-1.5 text-gray-500 text-xs">Heading</div>
-                    <div>
-                      <input
-                        className={`w-full px-2.5 py-2 rounded-md border border-gray-300 ${
-                          b.level === 1 ? 'text-xl' : b.level === 2 ? 'text-lg' : 'text-base'
-                        } font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                        disabled={preview}
-                        value={b.content || ''}
-                        onChange={(e) => updateBlock(b.id, { content: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {b.type === 'paragraph' && (
-                  <div>
-                    <div className="mb-1.5 text-gray-500 text-xs">Paragraph</div>
-                    <textarea
-                      className="w-full min-h-20 px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-                      disabled={preview}
-                      value={b.content || ''}
-                      onChange={(e) => updateBlock(b.id, { content: e.target.value })}
-                    />
-                  </div>
-                )}
-
-                {b.type === 'image' && (
-                  <div>
-                    <div className="mb-1.5 text-gray-500 text-xs">Image</div>
-
+                {blocks.map((b, i) => (
+                  <div
+                    key={b.id}
+                    draggable={!preview}
+                    onDragStart={(e) => onCanvasDragStart(e, i, b.id)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, i)}
+                    className="relative border border-gray-200 p-3 rounded-md mb-3 bg-blue-50/30 hover:border-gray-300 transition-colors"
+                  >
+                    {/* Action Bar */}
                     {!preview && (
-                      <div className="mb-2">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleImageFile(file, b.id);
-                          }}
+                      <div className="absolute -top-9 right-1.5 flex gap-1.5">
+                        <button
+                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
+                          onClick={() => moveBlock(b.id, 'up')}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
+                          onClick={() => moveBlock(b.id, 'down')}
+                        >
+                          ↓
+                        </button>
+                        <button
+                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
+                          onClick={() => setInspecting(b)}
+                          title="Inspect"
+                        >
+                          ⚙
+                        </button>
+                        <button
+                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-red-50 hover:bg-red-100 text-xs transition-colors"
+                          onClick={() => deleteBlock(b.id)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Block Content */}
+                    {b.type === 'heading' && (
+                      <div>
+                        <div className="mb-1.5 text-gray-500 text-xs">Heading</div>
+                        <div>
+                          <input
+                            className={`w-full px-2.5 py-2 rounded-md border border-gray-300 ${
+                              b.level === 1 ? 'text-xl' : b.level === 2 ? 'text-lg' : 'text-base'
+                            } font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                            disabled={preview}
+                            value={b.content || ''}
+                            onChange={(e) => updateBlock(b.id, { content: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {b.type === 'paragraph' && (
+                      <div>
+                        <div className="mb-1.5 text-gray-500 text-xs">Paragraph</div>
+                        <textarea
+                          className="w-full min-h-20 px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                          disabled={preview}
+                          value={b.content || ''}
+                          onChange={(e) => updateBlock(b.id, { content: e.target.value })}
                         />
                       </div>
                     )}
 
-                    {b.content ? (
-                      <img
-                        src={b.content}
-                        alt={b.alt || ''}
-                        className="max-w-full block"
-                        style={{ width: b.width ? `${b.width}px` : 'auto' }}
-                      />
-                    ) : (
-                      <div className="p-3 border border-dashed border-gray-300 rounded-md text-gray-500">
-                        No image selected
+                    {b.type === 'image' && (
+                      <div>
+                        <div className="mb-1.5 text-gray-500 text-xs">Image</div>
+
+                        {!preview && (
+                          <div className="mb-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleImageFile(file, b.id);
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        {b.content ? (
+                          <img
+                            src={b.content}
+                            alt={b.alt || ''}
+                            className="max-w-full block"
+                            style={{ width: b.width ? `${b.width}px` : 'auto' }}
+                          />
+                        ) : (
+                          <div className="p-3 border border-dashed border-gray-300 rounded-md text-gray-500">
+                            No image selected
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
+                ))}
 
-            {/* Add Block Button */}
-            {!preview && (
-              <div className="mt-4">
-                <div className="relative inline-block">
-                  <button
-                    className="px-3.5 py-2.5 rounded-md border border-blue-500 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                    onClick={() => setShowAddMenu((s) => !s)}
-                    aria-expanded={showAddMenu}
-                  >
-                    + Add Block
-                  </button>
+                {/* Add Block Button */}
+                {!preview && (
+                  <div className="mt-4">
+                    <div className="relative inline-block">
+                      <button
+                        className="px-3.5 py-2.5 rounded-md border border-blue-500 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                        onClick={() => setShowAddMenu((s) => !s)}
+                        aria-expanded={showAddMenu}
+                      >
+                        + Add Block
+                      </button>
 
-                  {showAddMenu && (
-                    <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg min-w-40 z-10">
-                      <div
-                        className="px-2.5 py-2 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                        onClick={() => {
-                          addBlock('heading');
-                          setShowAddMenu(false);
-                        }}
-                      >
-                        Heading
-                      </div>
-                      <div
-                        className="px-2.5 py-2 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                        onClick={() => {
-                          addBlock('paragraph');
-                          setShowAddMenu(false);
-                        }}
-                      >
-                        Paragraph
-                      </div>
-                      <div
-                        className="px-2.5 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => {
-                          addBlock('image');
-                          setShowAddMenu(false);
-                        }}
-                      >
-                        Image
-                      </div>
+                      {showAddMenu && (
+                        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg min-w-40 z-10">
+                          <div
+                            className="px-2.5 py-2 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                            onClick={() => {
+                              addBlock('heading');
+                              setShowAddMenu(false);
+                            }}
+                          >
+                            Heading
+                          </div>
+                          <div
+                            className="px-2.5 py-2 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                            onClick={() => {
+                              addBlock('paragraph');
+                              setShowAddMenu(false);
+                            }}
+                          >
+                            Paragraph
+                          </div>
+                          <div
+                            className="px-2.5 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => {
+                              addBlock('image');
+                              setShowAddMenu(false);
+                            }}
+                          >
+                            Image
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
