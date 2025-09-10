@@ -166,9 +166,9 @@ export default function TailwindEmailBuilder(): JSX.Element {
           }">${escapeHtml(b.content || '')}</h${level}>`;
         }
         if (b.type === 'paragraph') {
-          return `<p style="margin-bottom: 1rem; line-height: 1.625; color: ${globalStyle.textColor};">${escapeHtml(
-            b.content || ''
-          )}</p>`;
+          // Convert line breaks to <br> tags for HTML
+          const contentWithBreaks = escapeHtml(b.content || '').replace(/\n/g, '<br>');
+          return `<p style="margin-bottom: 1rem; line-height: 1.625; color: ${globalStyle.textColor};">${contentWithBreaks}</p>`;
         }
         if (b.type === 'image') {
           const w = b.width ? ` width="${b.width}"` : '';
