@@ -216,7 +216,16 @@ export default function TailwindEmailBuilder(): JSX.Element {
       {/* Main content area below navbar, height minus navbar (56px) */}
       <div className="flex" style={{ height: 'calc(100vh - 70px)' }}>
         {/* Sidebar */}
-        <Sidebar onDragStart={onSidebarDragStart} />
+        <Sidebar
+          onTemplateSelect={(blocks) => {
+            setBlocks(
+              blocks.map((b, i) => ({
+                ...b,
+                id: Date.now().toString() + '-' + i,
+              }))
+            );
+          }}
+        />
         {/* Main Editor */}
         <div
           className={`flex-1 p-5 overflow-auto flex flex-col items-center`}
