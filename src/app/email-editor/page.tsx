@@ -27,6 +27,13 @@ export default function TailwindEmailBuilder(): JSX.Element {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [inspecting, setInspecting] = useState<Block | null>(null);
   const [savedBlocks] = useState<Block[]>([]);
+  const [globalStyle, setGlobalStyle] = useState({
+    backdropColor: '#F2F5F7',
+    canvasColor: '#FFFFFF',
+    textColor: '#242424',
+    fontFamily: 'Inter, Arial, sans-serif',
+    padding: 20,
+  });
   // load
   useEffect(() => {
     try {
@@ -203,7 +210,14 @@ export default function TailwindEmailBuilder(): JSX.Element {
   }
 
   return (
-    <div className="font-sans bg-gray-50 min-h-screen">
+    <div
+      className="min-h-screen"
+      style={{
+        background: globalStyle.backdropColor,
+        color: globalStyle.textColor,
+        fontFamily: globalStyle.fontFamily,
+      }}
+    >
       <Navbar
         preview={preview}
         setPreview={setPreview}
@@ -255,10 +269,16 @@ export default function TailwindEmailBuilder(): JSX.Element {
             </button>
           </div>
           <div
-            className={`bg-white p-5 rounded-lg min-h-96 border border-gray-200 w-full ${
+            className={`rounded-lg min-h-96 border border-gray-200 w-full ${
               viewMode === 'mobile' ? 'max-w-xs' : 'max-w-3xl'
             }`}
-            style={viewMode === 'mobile' ? { minHeight: '600px' } : {}}
+            style={{
+              background: globalStyle.canvasColor,
+              color: globalStyle.textColor,
+              fontFamily: globalStyle.fontFamily,
+              padding: globalStyle.padding,
+              ...(viewMode === 'mobile' ? { minHeight: '600px' } : {}),
+            }}
           >
             {preview ? (
               <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: exportHTML() }} />
@@ -496,7 +516,13 @@ export default function TailwindEmailBuilder(): JSX.Element {
           </div>
         </div>
         {/* Inspector Panel */}
-        {inspecting && <Customize block={inspecting} updateBlock={updateBlock} close={() => setInspecting(null)} />}
+        <Customize
+          block={inspecting}
+          updateBlock={updateBlock}
+          close={() => setInspecting(null)}
+          globalStyle={globalStyle}
+          setGlobalStyle={setGlobalStyle}
+        />
       </div>
     </div>
   );
