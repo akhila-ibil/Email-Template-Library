@@ -290,7 +290,9 @@ export default function TailwindEmailBuilder(): JSX.Element {
                           onClick={() => setInspecting(b)}
                           title="Inspect"
                         >
-                          ⚙
+                          <span>
+                            <img src="/edit.svg" alt="Image" className="w-3 h-3" />
+                          </span>{' '}
                         </button>
                         <button
                           className="px-2 py-1.5 rounded-md border border-gray-300 bg-red-50 hover:bg-red-100 text-xs transition-colors"
