@@ -1,5 +1,6 @@
 'use client';
 
+import AddBlockMenu from '@/component/BlockMenu/BlockMenu';
 import Customize from '@/component/Customize/Customize';
 import Navbar from '@/component/Navbar/Navbar';
 import Sidebar from '@/component/Sidebar/Sidebar';
@@ -469,44 +470,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                       </div>
 
                       {showAddMenu && (
-                        <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg min-w-40 z-10">
-                          <div
-                            className="px-2.5 py-2 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors flex"
-                            onClick={() => {
-                              addBlock('heading');
-                              setShowAddMenu(false);
-                            }}
-                          >
-                            <span>
-                              <img src="/heading.svg" alt="Heading" className="w-5 h-5 mx-1" />
-                            </span>{' '}
-                            Heading
-                          </div>
-                          <div
-                            className="px-2.5 py-2 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors flex"
-                            onClick={() => {
-                              addBlock('paragraph');
-                              setShowAddMenu(false);
-                            }}
-                          >
-                            <span>
-                              <img src="/paragraph.svg" alt="Paragraph" className="w-5 h-5 mx-1" />
-                            </span>{' '}
-                            Paragraph
-                          </div>
-                          <div
-                            className="px-2.5 py-2 cursor-pointer hover:bg-gray-50 transition-colors flex"
-                            onClick={() => {
-                              addBlock('image');
-                              setShowAddMenu(false);
-                            }}
-                          >
-                            <span>
-                              <img src="/image.svg" alt="Image" className="w-5 h-5 mx-1" />
-                            </span>{' '}
-                            Image
-                          </div>
-                        </div>
+                        <AddBlockMenu addBlock={addBlock} show={showAddMenu} onClose={() => setShowAddMenu(false)} />
                       )}
                     </div>
                   </div>
