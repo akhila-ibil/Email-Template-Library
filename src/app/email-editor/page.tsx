@@ -178,7 +178,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
         if (b.type === 'button') {
           const style = `background-color: ${b.backgroundColor || '#007bff'}; color: ${
             b.textColor || '#ffffff'
-          }; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; border: none; cursor: pointer;`;
+          }; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; border: none; cursor: pointer; font-weight: 500; word-wrap: break-word; white-space: normal; max-width: 100%;`;
           return `<a href="${b.url || '#'}" style="${style}">${escapeHtml(b.content || 'Button')}</a>`;
         }
         if (b.type === 'divider') {
@@ -422,20 +422,19 @@ export default function TailwindEmailBuilder(): JSX.Element {
                             {b.content || 'Button'}
                           </button>
                         ) : (
-                          <input
-                            type="text"
-                            className="px-6 py-3 rounded-md font-medium text-center focus:outline-none transition-all inline-block"
+                          <a
+                            href={b.url || '#'}
+                            contentEditable
+                            suppressContentEditableWarning
+                            className="email-button"
+                            onBlur={(e) => updateBlock(b.id, { content: e.currentTarget.innerText })}
                             style={{
                               backgroundColor: b.backgroundColor || '#007bff',
                               color: b.textColor || '#ffffff',
-                              border: '2px dashed rgba(156, 163, 175, 0.5)',
                             }}
-                            placeholder="Button text"
-                            value={b.content || ''}
-                            onChange={(e) => updateBlock(b.id, { content: e.target.value })}
-                            onFocus={(e) => (e.target.style.border = '2px solid #3b82f6')}
-                            onBlur={(e) => (e.target.style.border = '2px dashed rgba(156, 163, 175, 0.5)')}
-                          />
+                          >
+                            {b.content || 'Button'}
+                          </a>
                         )}
                       </div>
                     )}
