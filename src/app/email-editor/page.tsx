@@ -409,7 +409,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
         {inspecting && (
           <div className="w-75 border-l border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
             <div className="flex justify-between items-center">
-              <strong>Inspect</strong>
+              <strong>Customize</strong>
               <button
                 className="border-none bg-white hover:bg-gray-50 cursor-pointer text-base p-1 rounded transition-colors"
                 onClick={() => setInspecting(null)}
