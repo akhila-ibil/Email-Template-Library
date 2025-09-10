@@ -1,5 +1,5 @@
 import { Block } from '@/app/email-editor/page';
-import React, { useState } from 'react';
+import React, { useState, JSX } from 'react';
 
 interface InspectorProps {
   block: Block | null;
@@ -8,6 +8,8 @@ interface InspectorProps {
   globalStyle: {
     backdropColor: string;
     canvasColor: string;
+    canvasBorderColor?: string;
+    canvasBorderRadius?: number;
     textColor: string;
     fontFamily: string;
     padding: number;
@@ -21,8 +23,27 @@ const fontOptions = [
   { label: 'Mono', value: 'Menlo, Monaco, monospace' },
 ];
 
+const alignmentOptions = [
+  { label: 'Left', value: 'left' },
+  { label: 'Center', value: 'center' },
+  { label: 'Right', value: 'right' },
+];
+const fontWeightOptions = [
+  { label: 'Normal', value: 'normal' },
+  { label: 'Bold', value: 'bold' },
+  { label: 'Bolder', value: 'bolder' },
+  { label: 'Lighter', value: 'lighter' },
+];
+
 const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, globalStyle, setGlobalStyle }) => {
   const [tab, setTab] = useState<'customize' | 'style'>('style');
+  // Helper for block style fields
+  const blockField = (label: string, input: JSX.Element) => (
+    <div className="mb-3">
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      {input}
+    </div>
+  );
   return (
     <div className="w-75 border-l border-gray-200 p-0 bg-white flex flex-col" style={{ height: '100%' }}>
       {/* Tabs */}
@@ -49,8 +70,46 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
       <div className="flex-1 overflow-auto p-4">
         {tab === 'style' ? (
           <>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Padding (px)</label>
+            {blockField(
+              'Backdrop Color',
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={globalStyle.backdropColor}
+                onChange={(e) => setGlobalStyle({ ...globalStyle, backdropColor: e.target.value })}
+              />
+            )}
+            {blockField(
+              'Canvas Color',
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={globalStyle.canvasColor}
+                onChange={(e) => setGlobalStyle({ ...globalStyle, canvasColor: e.target.value })}
+              />
+            )}
+            {blockField(
+              'Canvas Border Color',
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={globalStyle.canvasBorderColor || '#e5e7eb'}
+                onChange={(e) => setGlobalStyle({ ...globalStyle, canvasBorderColor: e.target.value })}
+              />
+            )}
+            {blockField(
+              'Canvas Border Radius (px)',
+              <input
+                type="number"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={globalStyle.canvasBorderRadius || 0}
+                min={0}
+                max={50}
+                onChange={(e) => setGlobalStyle({ ...globalStyle, canvasBorderRadius: parseInt(e.target.value) || 0 })}
+              />
+            )}
+            {blockField(
+              'Padding (px)',
               <input
                 type="number"
                 className="w-full p-2 border border-gray-300 rounded-md"
@@ -59,36 +118,9 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                 max={100}
                 onChange={(e) => setGlobalStyle({ ...globalStyle, padding: parseInt(e.target.value) || 0 })}
               />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Backdrop Color</label>
-              <input
-                type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
-                value={globalStyle.backdropColor}
-                onChange={(e) => setGlobalStyle({ ...globalStyle, backdropColor: e.target.value })}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Canvas Color</label>
-              <input
-                type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
-                value={globalStyle.canvasColor}
-                onChange={(e) => setGlobalStyle({ ...globalStyle, canvasColor: e.target.value })}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
-              <input
-                type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
-                value={globalStyle.textColor}
-                onChange={(e) => setGlobalStyle({ ...globalStyle, textColor: e.target.value })}
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Font Family</label>
+            )}
+            {blockField(
+              'Font Family',
               <select
                 className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={globalStyle.fontFamily}
@@ -100,68 +132,270 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                   </option>
                 ))}
               </select>
-            </div>
+            )}
+            {blockField(
+              'Text Color',
+              <input
+                type="color"
+                className="w-full h-10 border border-gray-300 rounded-md"
+                value={globalStyle.textColor}
+                onChange={(e) => setGlobalStyle({ ...globalStyle, textColor: e.target.value })}
+              />
+            )}
           </>
         ) : block === null ? (
-          <div className="p-4">Select a block to customize its properties.</div>
+          <div className="p-4">Select a block to inspect its properties.</div>
         ) : (
           <>
-            <div className="mb-2 text-gray-700">Type: {block.type}</div>
+            <div className="mb-2 text-gray-700">{block.type.charAt(0).toUpperCase() + block.type.slice(1)} Block</div>
+            {/* Heading Block */}
             {block.type === 'heading' && (
               <>
-                <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Level</label>
-                <select
-                  value={block.level}
-                  onChange={(e) => updateBlock(block.id, { level: Number(e.target.value) })}
-                  className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value={1}>H1</option>
-                  <option value={2}>H2</option>
-                  <option value={3}>H3</option>
-                </select>
-
-                <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Text</label>
-                <input
-                  className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={block.content}
-                  onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                />
+                {blockField(
+                  'Level',
+                  <select
+                    value={block.level}
+                    onChange={(e) => updateBlock(block.id, { level: Number(e.target.value) })}
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value={1}>H1</option>
+                    <option value={2}>H2</option>
+                    <option value={3}>H3</option>
+                  </select>
+                )}
+                {blockField(
+                  'Text',
+                  <input
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={block.content}
+                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Alignment',
+                  <select
+                    value={block.alignment || 'left'}
+                    onChange={(e) =>
+                      updateBlock(block.id, { alignment: e.target.value as 'left' | 'center' | 'right' })
+                    }
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300"
+                  >
+                    {alignmentOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {blockField(
+                  'Color',
+                  <input
+                    type="color"
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                    value={block.textColor || '#242424'}
+                    onChange={(e) => updateBlock(block.id, { textColor: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Font Size (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.fontSize || 24}
+                    min={10}
+                    max={72}
+                    onChange={(e) => updateBlock(block.id, { fontSize: parseInt(e.target.value) || 24 })}
+                  />
+                )}
+                {blockField(
+                  'Font Weight',
+                  <select
+                    value={block.fontWeight || 'bold'}
+                    onChange={(e) =>
+                      updateBlock(block.id, { fontWeight: e.target.value as 'normal' | 'bold' | 'bolder' | 'lighter' })
+                    }
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300"
+                  >
+                    {fontWeightOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {blockField(
+                  'Line Height',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.lineHeight || 1.2}
+                    min={1}
+                    max={2}
+                    step={0.1}
+                    onChange={(e) => updateBlock(block.id, { lineHeight: parseFloat(e.target.value) || 1.2 })}
+                  />
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
               </>
             )}
+            {/* Paragraph Block */}
             {block.type === 'paragraph' && (
               <>
-                <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Text</label>
-                <textarea
-                  className="w-full min-h-20 px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-                  value={block.content}
-                  onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                />
+                {blockField(
+                  'Text',
+                  <textarea
+                    className="w-full min-h-20 px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                    value={block.content}
+                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Alignment',
+                  <select
+                    value={block.alignment || 'left'}
+                    onChange={(e) =>
+                      updateBlock(block.id, { alignment: e.target.value as 'left' | 'center' | 'right' })
+                    }
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300"
+                  >
+                    {alignmentOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {blockField(
+                  'Color',
+                  <input
+                    type="color"
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                    value={block.textColor || '#242424'}
+                    onChange={(e) => updateBlock(block.id, { textColor: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Font Size (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.fontSize || 16}
+                    min={10}
+                    max={48}
+                    onChange={(e) => updateBlock(block.id, { fontSize: parseInt(e.target.value) || 16 })}
+                  />
+                )}
+                {blockField(
+                  'Line Height',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.lineHeight || 1.5}
+                    min={1}
+                    max={2}
+                    step={0.1}
+                    onChange={(e) => updateBlock(block.id, { lineHeight: parseFloat(e.target.value) || 1.5 })}
+                  />
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
               </>
             )}
+            {/* Image Block */}
             {block.type === 'image' && (
               <>
-                <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Alt text</label>
-                <input
-                  className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={block.alt || ''}
-                  onChange={(e) => updateBlock(block.id, { alt: e.target.value })}
-                />
-                <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Width (px)</label>
-                <input
-                  type="number"
-                  className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={block.width ?? ''}
-                  onChange={(e) => updateBlock(block.id, { width: Number(e.target.value) || undefined })}
-                />
+                {blockField(
+                  'Alt text',
+                  <input
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={block.alt || ''}
+                    onChange={(e) => updateBlock(block.id, { alt: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Width (px)',
+                  <input
+                    type="number"
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={block.width ?? ''}
+                    onChange={(e) => updateBlock(block.id, { width: Number(e.target.value) || undefined })}
+                  />
+                )}
+                {blockField(
+                  'Alignment',
+                  <select
+                    value={block.alignment || 'center'}
+                    onChange={(e) =>
+                      updateBlock(block.id, { alignment: e.target.value as 'left' | 'center' | 'right' })
+                    }
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300"
+                  >
+                    {alignmentOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {blockField(
+                  'Border Radius (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.borderRadius || 0}
+                    min={0}
+                    max={50}
+                    onChange={(e) => updateBlock(block.id, { borderRadius: parseInt(e.target.value) || 0 })}
+                  />
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
                 <div className="mt-2">
                   <small className="text-gray-500">To change the image, use the file input on the block.</small>
                 </div>
               </>
             )}
+            {/* Button Block */}
             {block.type === 'button' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Button URL</label>
+              <>
+                {blockField(
+                  'Text',
+                  <input
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={block.content}
+                    onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Button URL',
                   <input
                     type="url"
                     className="w-full p-2 border border-gray-300 rounded-md"
@@ -169,65 +403,165 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                     onChange={(e) => updateBlock(block.id, { url: e.target.value })}
                     placeholder="https://example.com"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                )}
+                {blockField(
+                  'Alignment',
+                  <select
+                    value={block.alignment || 'center'}
+                    onChange={(e) =>
+                      updateBlock(block.id, { alignment: e.target.value as 'left' | 'center' | 'right' })
+                    }
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300"
+                  >
+                    {alignmentOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {blockField(
+                  'Background Color',
                   <input
                     type="color"
                     className="w-full h-10 border border-gray-300 rounded-md"
                     value={block.backgroundColor || '#007bff'}
                     onChange={(e) => updateBlock(block.id, { backgroundColor: e.target.value })}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+                )}
+                {blockField(
+                  'Text Color',
                   <input
                     type="color"
                     className="w-full h-10 border border-gray-300 rounded-md"
                     value={block.textColor || '#ffffff'}
                     onChange={(e) => updateBlock(block.id, { textColor: e.target.value })}
                   />
-                </div>
-              </div>
+                )}
+                {blockField(
+                  'Border Radius (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.borderRadius || 4}
+                    min={0}
+                    max={50}
+                    onChange={(e) => updateBlock(block.id, { borderRadius: parseInt(e.target.value) || 4 })}
+                  />
+                )}
+                {blockField(
+                  'Padding (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.padding || 12}
+                    min={0}
+                    max={48}
+                    onChange={(e) => updateBlock(block.id, { padding: parseInt(e.target.value) || 12 })}
+                  />
+                )}
+                {blockField(
+                  'Font Size (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.fontSize || 16}
+                    min={10}
+                    max={32}
+                    onChange={(e) => updateBlock(block.id, { fontSize: parseInt(e.target.value) || 16 })}
+                  />
+                )}
+                {blockField(
+                  'Font Weight',
+                  <select
+                    value={block.fontWeight || 'bold'}
+                    onChange={(e) =>
+                      updateBlock(block.id, { fontWeight: e.target.value as 'normal' | 'bold' | 'bolder' | 'lighter' })
+                    }
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300"
+                  >
+                    {fontWeightOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
+              </>
             )}
+            {/* Divider Block */}
             {block.type === 'divider' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Thickness (px)</label>
+              <>
+                {blockField(
+                  'Thickness (px)',
                   <input
                     type="number"
                     className="w-full p-2 border border-gray-300 rounded-md"
                     value={block.thickness || 1}
-                    min="1"
-                    max="10"
+                    min={1}
+                    max={10}
                     onChange={(e) => updateBlock(block.id, { thickness: parseInt(e.target.value) || 1 })}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                )}
+                {blockField(
+                  'Color',
                   <input
                     type="color"
                     className="w-full h-10 border border-gray-300 rounded-md"
                     value={block.dividerColor || '#e5e7eb'}
                     onChange={(e) => updateBlock(block.id, { dividerColor: e.target.value })}
                   />
-                </div>
-              </div>
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 20}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 20 })}
+                  />
+                )}
+              </>
             )}
+            {/* Spacer Block */}
             {block.type === 'spacer' && (
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+              <>
+                {blockField(
+                  'Height (px)',
                   <input
                     type="number"
                     className="w-full p-2 border border-gray-300 rounded-md"
                     value={block.spacerHeight || 20}
-                    min="5"
-                    max="200"
+                    min={5}
+                    max={200}
                     onChange={(e) => updateBlock(block.id, { spacerHeight: parseInt(e.target.value) || 20 })}
                   />
-                </div>
-              </div>
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
+              </>
             )}
           </>
         )}

@@ -19,6 +19,14 @@ export type Block = {
   thickness?: number; // divider thickness
   dividerColor?: string; // divider color
   spacerHeight?: number; // spacer height
+  // New style fields for advanced customization
+  alignment?: 'left' | 'center' | 'right';
+  fontSize?: number;
+  fontWeight?: 'normal' | 'bold' | 'bolder' | 'lighter';
+  lineHeight?: number;
+  margin?: number;
+  borderRadius?: number;
+  padding?: number;
 };
 export default function TailwindEmailBuilder(): JSX.Element {
   const [blocks, setBlocks] = useState<Block[]>([]);
