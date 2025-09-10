@@ -176,9 +176,10 @@ export default function TailwindEmailBuilder(): JSX.Element {
           return `<img src="${b.content || ''}"${alt}${w} />`;
         }
         if (b.type === 'button') {
+          // FIXED: Added display: block and margin-bottom to ensure buttons appear on separate lines
           const style = `background-color: ${b.backgroundColor || '#007bff'}; color: ${
             b.textColor || '#ffffff'
-          }; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; border: none; cursor: pointer; font-weight: 500; word-wrap: break-word; white-space: normal; max-width: 100%;`;
+          }; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: block; border: none; cursor: pointer; font-weight: 500; word-wrap: break-word; white-space: normal; max-width: fit-content; margin-bottom: 10px;`;
           return `<a href="${b.url || '#'}" style="${style}">${escapeHtml(b.content || 'Button')}</a>`;
         }
         if (b.type === 'divider') {
