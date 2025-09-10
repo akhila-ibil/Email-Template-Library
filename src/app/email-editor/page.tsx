@@ -161,10 +161,14 @@ export default function TailwindEmailBuilder(): JSX.Element {
       .map((b) => {
         if (b.type === 'heading') {
           const level = Math.min(3, Math.max(1, b.level || 1));
-          return `<h${level}>${escapeHtml(b.content || '')}</h${level}>`;
+          return `<h${level} style="font-weight: bold; margin-bottom: 1rem; color: ${globalStyle.textColor}; ${
+            b.level === 1 ? 'font-size: 1.5rem;' : b.level === 2 ? 'font-size: 1.25rem;' : 'font-size: 1.125rem;'
+          }">${escapeHtml(b.content || '')}</h${level}>`;
         }
         if (b.type === 'paragraph') {
-          return `<p>${escapeHtml(b.content || '')}</p>`;
+          return `<p style="margin-bottom: 1rem; line-height: 1.625; color: ${globalStyle.textColor};">${escapeHtml(
+            b.content || ''
+          )}</p>`;
         }
         if (b.type === 'image') {
           const w = b.width ? ` width="${b.width}"` : '';
