@@ -1,6 +1,8 @@
 'use client';
 
+import Customize from '@/component/Customize/Customize';
 import Navbar from '@/component/Navbar/Navbar';
+import Sidebar from '@/component/Sidebar/Sidebar';
 import React, { JSX, useEffect, useState } from 'react';
 
 export type Block = {
@@ -180,49 +182,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
       {/* Main content area below navbar, height minus navbar (56px) */}
       <div className="flex" style={{ height: 'calc(100vh - 70px)' }}>
         {/* Sidebar */}
-        <div className="w-56 border-r border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
-          <div className="font-bold mb-3 text-gray-800">Blocks</div>
-
-          <div
-            className="p-2 bg-gray-50 border border-gray-200 rounded-md flex mb-2 cursor-grab hover:bg-gray-100 transition-colors"
-            draggable
-            onDragStart={(e) => onSidebarDragStart(e, 'heading')}
-          >
-            +{' '}
-            <span>
-              <img src="/heading.svg" alt="Mobile" className="w-5 h-5 mx-1" />
-            </span>{' '}
-            Heading
-          </div>
-
-          <div
-            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2  flex cursor-grab hover:bg-gray-100 transition-colors"
-            draggable
-            onDragStart={(e) => onSidebarDragStart(e, 'paragraph')}
-          >
-            +
-            <span>
-              <img src="/paragraph.svg" alt="Mobile" className="w-5 h-5 mx-1" />
-            </span>{' '}
-            Paragraph
-          </div>
-
-          <div
-            className="p-2 bg-gray-50 border border-gray-200 rounded-md mb-2 cursor-grab flex hover:bg-gray-100 transition-colors"
-            draggable
-            onDragStart={(e) => onSidebarDragStart(e, 'image')}
-          >
-            +
-            <span>
-              <img src="/image.svg" alt="Mobile" className="w-5 h-5 mx-1" />
-            </span>{' '}
-            Image
-          </div>
-
-          <div className="mt-4 text-gray-500 text-xs">
-            Drag a block from the left onto the canvas to add it. Drag within the canvas to reorder.
-          </div>
-        </div>
+        <Sidebar onDragStart={onSidebarDragStart} />
 
         {/* Main Editor */}
         <div
@@ -374,15 +334,17 @@ export default function TailwindEmailBuilder(): JSX.Element {
 
                 {/* Add Block Button */}
                 {!preview && (
-                  <div className="mt-4">
+                  <div className=" flex justify-center mt-4">
                     <div className="relative inline-block">
-                      <button
-                        className="px-3.5 py-2.5 rounded-md border border-blue-500 bg-blue-500 text-white hover:bg-blue-600 transition-colors"
-                        onClick={() => setShowAddMenu((s) => !s)}
-                        aria-expanded={showAddMenu}
-                      >
-                        + Add Block
-                      </button>
+                      <div className="flex ">
+                        <button
+                          className="px-3.5 py-2.5 rounded-md border hover:bg-gray-100 border-gray-300  text-center text-gray-500 transition-colors"
+                          onClick={() => setShowAddMenu((s) => !s)}
+                          aria-expanded={showAddMenu}
+                        >
+                          +
+                        </button>
+                      </div>
 
                       {showAddMenu && (
                         <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg min-w-40 z-10">
@@ -394,7 +356,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                             }}
                           >
                             <span>
-                              <img src="/heading.svg" alt="Mobile" className="w-5 h-5 mx-1" />
+                              <img src="/heading.svg" alt="Heading" className="w-5 h-5 mx-1" />
                             </span>{' '}
                             Heading
                           </div>
@@ -406,7 +368,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                             }}
                           >
                             <span>
-                              <img src="/paragraph.svg" alt="Mobile" className="w-5 h-5 mx-1" />
+                              <img src="/paragraph.svg" alt="Paragraph" className="w-5 h-5 mx-1" />
                             </span>{' '}
                             Paragraph
                           </div>
@@ -418,7 +380,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                             }}
                           >
                             <span>
-                              <img src="/image.svg" alt="Mobile" className="w-5 h-5 mx-1" />
+                              <img src="/image.svg" alt="Image" className="w-5 h-5 mx-1" />
                             </span>{' '}
                             Image
                           </div>
@@ -433,79 +395,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
         </div>
 
         {/* Inspector Panel */}
-        {inspecting && (
-          <div className="w-75 border-l border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
-            <div className="flex justify-between items-center">
-              <strong>Customize</strong>
-              <button
-                className="border-none bg-white hover:bg-gray-50 cursor-pointer text-base p-1 rounded transition-colors"
-                onClick={() => setInspecting(null)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-3">
-              <div className="mb-2 text-gray-700">Type: {inspecting.type}</div>
-
-              {inspecting.type === 'heading' && (
-                <>
-                  <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Level</label>
-                  <select
-                    value={inspecting.level}
-                    onChange={(e) => updateBlock(inspecting.id, { level: Number(e.target.value) })}
-                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value={1}>H1</option>
-                    <option value={2}>H2</option>
-                    <option value={3}>H3</option>
-                  </select>
-
-                  <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Text</label>
-                  <input
-                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={inspecting.content}
-                    onChange={(e) => updateBlock(inspecting.id, { content: e.target.value })}
-                  />
-                </>
-              )}
-
-              {inspecting.type === 'paragraph' && (
-                <>
-                  <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Text</label>
-                  <textarea
-                    className="w-full min-h-20 px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-                    value={inspecting.content}
-                    onChange={(e) => updateBlock(inspecting.id, { content: e.target.value })}
-                  />
-                </>
-              )}
-
-              {inspecting.type === 'image' && (
-                <>
-                  <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Alt text</label>
-                  <input
-                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={inspecting.alt || ''}
-                    onChange={(e) => updateBlock(inspecting.id, { alt: e.target.value })}
-                  />
-
-                  <label className="block mt-2.5 mb-1.5 text-gray-700 text-sm">Width (px)</label>
-                  <input
-                    type="number"
-                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={inspecting.width ?? ''}
-                    onChange={(e) => updateBlock(inspecting.id, { width: Number(e.target.value) || undefined })}
-                  />
-
-                  <div className="mt-2">
-                    <small className="text-gray-500">To change the image, use the file input on the block.</small>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        {inspecting && <Customize block={inspecting} updateBlock={updateBlock} close={() => setInspecting(null)} />}
       </div>
     </div>
   );

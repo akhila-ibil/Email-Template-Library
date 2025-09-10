@@ -39,17 +39,17 @@ const Navbar: React.FC<NavbarProps> = ({
           {preview ? 'Edit Mode' : 'Preview'}
         </button>
         <button
-          className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
+          className="px-5 py-2 rounded-md border border-green-800 bg-green-50   text-green-700 hover:bg-green-100 transition-colors "
           onClick={copyJSON}
         >
-          Copy JSON
+          Save
         </button>
-        <button
+        {/* <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
           onClick={copyHTML}
         >
           Copy HTML
-        </button>
+        </button> */}
         {/* <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
           onClick={() => {
