@@ -8,7 +8,7 @@ import React, { JSX, useEffect, useState } from 'react';
 
 export type Block = {
   id: string;
-  type: 'heading' | 'paragraph' | 'image' | 'button' | 'divider' | 'spacer';
+  type: 'heading' | 'paragraph' | 'image' | 'button' | 'divider' | 'spacer' | 'container' | 'columns';
   level?: number; // for heading
   content?: string; // text or dataURL
   alt?: string; // image alt
@@ -27,6 +27,12 @@ export type Block = {
   margin?: number;
   borderRadius?: number;
   padding?: number;
+  // New fields for container and columns
+  borderColor?: string;
+  borderWidth?: number;
+  columnCount?: number; // for columns block
+  columnGap?: number; // for columns block
+  children?: Block[]; // nested blocks for container and columns
 };
 export default function TailwindEmailBuilder(): JSX.Element {
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -69,7 +75,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
   }, [savedBlocks]);
 
   // helpers
-  const addBlock = (type: Block['type'], insertAt?: number) => {
+  const addBlock = (type: Block['type'], insertAt?: number, parentId?: string) => {
     const newBlock: Block = {
       id: Date.now().toString(),
       type,
@@ -83,43 +89,113 @@ export default function TailwindEmailBuilder(): JSX.Element {
           ? 'Click Me'
           : '',
       url: type === 'button' ? 'https://example.com' : undefined,
-      backgroundColor: type === 'button' ? '#007bff' : undefined,
+      backgroundColor: type === 'button' ? '#007bff' : type === 'container' ? '#f8f9fa' : undefined,
       textColor: type === 'button' ? '#ffffff' : undefined,
       thickness: type === 'divider' ? 1 : undefined,
       dividerColor: type === 'divider' ? '#e5e7eb' : undefined,
       spacerHeight: type === 'spacer' ? 20 : undefined,
+      borderColor: type === 'container' || type === 'columns' ? '#e5e7eb' : undefined,
+      borderWidth: type === 'container' || type === 'columns' ? 1 : undefined,
+      padding: type === 'container' || type === 'columns' ? 16 : undefined,
+      columnCount: type === 'columns' ? 2 : undefined,
+      columnGap: type === 'columns' ? 16 : undefined,
+      children: type === 'container' || type === 'columns' ? [] : undefined,
     };
-    const copy = [...blocks];
-    if (insertAt !== undefined) copy.splice(insertAt, 0, newBlock);
-    else copy.push(newBlock);
-    setBlocks(copy);
-  };
 
+    if (parentId) {
+      // Add to nested children
+      setBlocks((prev) => addToNested(prev, parentId, newBlock, insertAt));
+    } else {
+      // Add to root level
+      const copy = [...blocks];
+      if (insertAt !== undefined) copy.splice(insertAt, 0, newBlock);
+      else copy.push(newBlock);
+      setBlocks(copy);
+    }
+  };
+  // Helper function to add blocks to nested children
+  const addToNested = (blocks: Block[], parentId: string, newBlock: Block, insertAt?: number): Block[] => {
+    return blocks.map((block) => {
+      if (block.id === parentId) {
+        const children = block.children || [];
+        if (insertAt !== undefined) {
+          children.splice(insertAt, 0, newBlock);
+        } else {
+          children.push(newBlock);
+        }
+        return { ...block, children: [...children] };
+      }
+      if (block.children) {
+        return { ...block, children: addToNested(block.children, parentId, newBlock, insertAt) };
+      }
+      return block;
+    });
+  };
   const updateBlock = (id: string, changes: Partial<Block>) => {
-    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...changes } : b)));
+    const updateNested = (blocks: Block[]): Block[] => {
+      return blocks.map((block) => {
+        if (block.id === id) {
+          return { ...block, ...changes };
+        }
+        if (block.children) {
+          return { ...block, children: updateNested(block.children) };
+        }
+        return block;
+      });
+    };
+
+    setBlocks(updateNested);
     if (inspecting?.id === id) setInspecting((p) => (p ? { ...p, ...changes } : p));
   };
 
+  // Updated deleteBlock function to handle nested blocks
   const deleteBlock = (id: string) => {
-    setBlocks((prev) => prev.filter((b) => b.id !== id));
+    const deleteFromNested = (blocks: Block[]): Block[] => {
+      return blocks.reduce((acc: Block[], block) => {
+        if (block.id === id) {
+          // Skip this block (delete it)
+          return acc;
+        }
+        if (block.children) {
+          // Recursively delete from children
+          const updatedBlock = { ...block, children: deleteFromNested(block.children) };
+          acc.push(updatedBlock);
+        } else {
+          acc.push(block);
+        }
+        return acc;
+      }, []);
+    };
+
+    setBlocks(deleteFromNested);
     if (inspecting?.id === id) setInspecting(null);
   };
 
+  // Updated moveBlock function to handle nested blocks
   const moveBlock = (id: string, dir: 'up' | 'down') => {
-    setBlocks((prev) => {
-      const idx = prev.findIndex((p) => p.id === id);
-      if (idx === -1) return prev;
-      const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-      if (swapIdx < 0 || swapIdx >= prev.length) return prev;
-      const arr = [...prev];
-      [arr[idx], arr[swapIdx]] = [arr[swapIdx], arr[idx]];
-      return arr;
-    });
-  };
+    const moveInNested = (blocks: Block[]): Block[] => {
+      // First, try to move at this level
+      const idx = blocks.findIndex((b) => b.id === id);
+      if (idx !== -1) {
+        const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
+        if (swapIdx >= 0 && swapIdx < blocks.length) {
+          const arr = [...blocks];
+          [arr[idx], arr[swapIdx]] = [arr[swapIdx], arr[idx]];
+          return arr;
+        }
+        return blocks; // Can't move, return unchanged
+      }
 
-  // drag & drop handlers
-  const onSidebarDragStart = (e: React.DragEvent, type: Block['type']) => {
-    e.dataTransfer.setData('text/plain', `sidebar-${type}`);
+      // If not found at this level, recursively search in children
+      return blocks.map((block) => {
+        if (block.children && block.children.length > 0) {
+          return { ...block, children: moveInNested(block.children) };
+        }
+        return block;
+      });
+    };
+
+    setBlocks(moveInNested);
   };
 
   const onCanvasDragStart = (e: React.DragEvent, index: number, id: string) => {
@@ -224,7 +300,304 @@ export default function TailwindEmailBuilder(): JSX.Element {
   function escapeHtml(s: string) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+  const AddButton = ({
+    onAdd,
+    parentId,
+  }: {
+    onAdd: (type: Block['type'], insertAt?: number, parentId?: string) => void;
+    parentId?: string;
+  }) => {
+    const [showMenu, setShowMenu] = useState(false);
 
+    return (
+      <div className="relative inline-block">
+        <button
+          className="px-3.5 py-2.5 rounded-md border hover:bg-gray-100 border-gray-300  text-center text-gray-500 transition-colors"
+          onClick={() => setShowMenu(!showMenu)}
+        >
+          +
+        </button>
+        {showMenu && (
+          <AddBlockMenu
+            addBlock={(type) => {
+              onAdd(type, undefined, parentId);
+              setShowMenu(false);
+            }}
+            show={showMenu}
+            onClose={() => setShowMenu(false)}
+          />
+        )}
+      </div>
+    );
+  };
+  const renderBlock = (block: Block, index: number, isNested = false, parentId?: string) => (
+    <div
+      key={block.id}
+      draggable={!preview}
+      onDragStart={(e) => onCanvasDragStart(e, index, block.id)}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => handleDrop(e, index)}
+      className={`relative p-3 rounded-md mb-3 ${
+        isNested ? 'bg-gray-50/30' : 'bg-blue-50/30'
+      } hover:border-gray-300 transition-colors ${inspecting?.id === block.id ? 'ring-2 ring-blue-400' : ''}`}
+      onClick={() => {
+        if (!preview) setInspecting(block);
+      }}
+      style={{ cursor: !preview ? 'pointer' : undefined }}
+    >
+      {/* Action Bar */}
+      {!preview && inspecting?.id === block.id && (
+        <div className="absolute -top-9 right-1.5 flex gap-1.5">
+          <button
+            className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
+            onClick={() => moveBlock(block.id, 'up')}
+          >
+            ↑
+          </button>
+          <button
+            className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
+            onClick={() => moveBlock(block.id, 'down')}
+          >
+            ↓
+          </button>
+          <button
+            className="px-2 py-1.5 rounded-md border border-gray-300 bg-red-50 hover:bg-red-100 text-xs transition-colors"
+            onClick={() => deleteBlock(block.id)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+      {block.type === 'heading' && (
+        <div>
+          <input
+            className={`w-full px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+            disabled={preview}
+            value={block.content || ''}
+            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+            style={{
+              textAlign: block.alignment,
+              fontSize: block.fontSize,
+              fontWeight: block.fontWeight,
+              lineHeight: block.lineHeight,
+              margin: block.margin !== undefined ? block.margin : undefined,
+              color: block.textColor,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Paragraph Block */}
+      {block.type === 'paragraph' && (
+        <div>
+          <textarea
+            className="w-full min-h-20 px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+            disabled={preview}
+            value={block.content || ''}
+            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+            style={{
+              textAlign: block.alignment,
+              fontSize: block.fontSize,
+              lineHeight: block.lineHeight,
+              margin: block.margin !== undefined ? block.margin : undefined,
+              color: block.textColor,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Image Block */}
+      {block.type === 'image' && (
+        <div>
+          {!preview && (
+            <div className="mb-2">
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageFile(file, block.id);
+                }}
+              />
+            </div>
+          )}
+
+          {block.content ? (
+            <img
+              src={block.content}
+              alt={block.alt || ''}
+              className="max-w-full block"
+              style={{
+                width: block.width ? `${block.width}px` : 'auto',
+                borderRadius: block.borderRadius,
+                margin: block.margin !== undefined ? block.margin : undefined,
+                display: block.alignment === 'center' ? 'block' : undefined,
+                marginLeft: block.alignment === 'center' ? 'auto' : block.alignment === 'right' ? 'auto' : undefined,
+                marginRight: block.alignment === 'center' ? 'auto' : block.alignment === 'left' ? 'auto' : undefined,
+              }}
+            />
+          ) : (
+            <div className="p-3 border border-dashed border-gray-300 rounded-md text-gray-500">No image selected</div>
+          )}
+        </div>
+      )}
+
+      {/* Button Block */}
+      {block.type === 'button' && (
+        <div>
+          {preview ? (
+            <button
+              className="px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity cursor-pointer inline-block"
+              style={{
+                backgroundColor: block.backgroundColor,
+                color: block.textColor,
+                borderRadius: block.borderRadius,
+                padding: block.padding,
+                fontSize: block.fontSize,
+                fontWeight: block.fontWeight,
+                margin: block.margin !== undefined ? block.margin : undefined,
+              }}
+              onClick={() => window.open(block.url, '_blank')}
+            >
+              {block.content || 'Button'}
+            </button>
+          ) : (
+            <a
+              href={block.url || '#'}
+              contentEditable
+              suppressContentEditableWarning
+              className="email-button"
+              onBlur={(e) => updateBlock(block.id, { content: e.currentTarget.innerText })}
+              style={{
+                backgroundColor: block.backgroundColor,
+                color: block.textColor,
+                borderRadius: block.borderRadius,
+                padding: block.padding,
+                fontSize: block.fontSize,
+                fontWeight: block.fontWeight,
+                margin: block.margin !== undefined ? block.margin : undefined,
+              }}
+            >
+              {block.content || 'Button'}
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Divider Block */}
+      {block.type === 'divider' && (
+        <div>
+          <hr
+            style={{
+              height: block.thickness,
+              backgroundColor: block.dividerColor,
+              border: 'none',
+              margin: block.margin !== undefined ? block.margin : undefined,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Spacer Block */}
+      {block.type === 'spacer' && (
+        <div>
+          <div
+            className="bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm"
+            style={{
+              height: block.spacerHeight,
+              margin: block.margin !== undefined ? block.margin : undefined,
+            }}
+          >
+            {!preview && `${block.spacerHeight || 20}px`}
+          </div>
+        </div>
+      )}
+      {/* Container Block */}
+      {block.type === 'container' && (
+        <div>
+          <div
+            className="min-h-24 rounded-md"
+            style={{
+              backgroundColor: block.backgroundColor || 'transparent',
+              borderColor: block.borderColor || '#e5e7eb',
+              borderWidth: `${block.borderWidth || 1}px`,
+              borderStyle: 'solid',
+              borderRadius: `${block.borderRadius || 4}px`,
+              padding: `${block.padding || 16}px`,
+              margin: `${block.margin || 0}px 0`,
+            }}
+          >
+            {block.children && block.children.length > 0 ? (
+              <>
+                {block.children.map((child, childIndex) => renderBlock(child, childIndex, true, block.id))}
+                {!preview && (
+                  <div className="flex justify-center mt-4">
+                    <AddButton onAdd={addBlock} parentId={block.id} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-gray-400 py-8">
+                <p className="mb-4">Empty container - click + to add content</p>
+                {!preview && <AddButton onAdd={addBlock} parentId={block.id} />}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Columns Block */}
+      {block.type === 'columns' && (
+        <div>
+          <div
+            className="min-h-24 rounded-md"
+            style={{
+              backgroundColor: block.backgroundColor || 'transparent',
+              borderColor: block.borderColor || '#e5e7eb',
+              borderWidth: `${block.borderWidth || 1}px`,
+              borderStyle: 'solid',
+              borderRadius: `${block.borderRadius || 4}px`,
+              padding: `${block.padding || 16}px`,
+              margin: `${block.margin || 0}px 0`,
+              display: 'grid',
+              gridTemplateColumns: `repeat(${block.columnCount || 2}, 1fr)`,
+              gap: `${block.columnGap || 16}px`,
+            }}
+          >
+            {Array.from({ length: block.columnCount || 2 }).map((_, colIndex) => {
+              const columnChildren =
+                block.children?.filter((_, index) => index % (block.columnCount || 2) === colIndex) || [];
+
+              return (
+                <div
+                  key={colIndex}
+                  className="min-h-20 border border-dashed border-gray-300 rounded p-2"
+                  style={{ minHeight: '80px' }}
+                >
+                  {columnChildren.length > 0 ? (
+                    <>
+                      {columnChildren.map((child, childIndex) => renderBlock(child, childIndex, true, block.id))}
+                      {!preview && (
+                        <div className="flex justify-center mt-2">
+                          <AddButton onAdd={addBlock} parentId={block.id} />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center text-gray-400 py-4 h-full flex flex-col justify-center">
+                      <p className="mb-2 text-xs">Column {colIndex + 1}</p>
+                      {!preview && <AddButton onAdd={addBlock} parentId={block.id} />}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
   return (
     <div
       className="min-h-screen"
@@ -306,200 +679,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                   </div>
                 )}
 
-                {blocks.map((b, i) => (
-                  <div
-                    key={b.id}
-                    draggable={!preview}
-                    onDragStart={(e) => onCanvasDragStart(e, i, b.id)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(e, i)}
-                    className={`relative p-3 rounded-md mb-3 bg-blue-50/30 hover:border-gray-300 transition-colors ${
-                      inspecting?.id === b.id ? 'ring-2 ring-blue-400' : ''
-                    }`}
-                    onClick={() => {
-                      if (!preview) setInspecting(b);
-                    }}
-                    style={{ cursor: !preview ? 'pointer' : undefined }}
-                  >
-                    {/* Action Bar: Only show when this block is selected (inspecting) and not in preview */}
-                    {!preview && inspecting?.id === b.id && (
-                      <div className="absolute -top-9 right-1.5 flex gap-1.5">
-                        <button
-                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
-                          onClick={() => moveBlock(b.id, 'up')}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
-                          onClick={() => moveBlock(b.id, 'down')}
-                        >
-                          ↓
-                        </button>
-                        {/* Removed Inspect icon button, block is now clickable to select */}
-                        <button
-                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-red-50 hover:bg-red-100 text-xs transition-colors"
-                          onClick={() => deleteBlock(b.id)}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Block Content */}
-
-                    {/* Heading Block */}
-                    {b.type === 'heading' && (
-                      <div>
-                        <input
-                          className={`w-full px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                          disabled={preview}
-                          value={b.content || ''}
-                          onChange={(e) => updateBlock(b.id, { content: e.target.value })}
-                          style={{
-                            textAlign: b.alignment,
-                            fontSize: b.fontSize,
-                            fontWeight: b.fontWeight,
-                            lineHeight: b.lineHeight,
-                            margin: b.margin !== undefined ? b.margin : undefined,
-                            color: b.textColor,
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Paragraph Block */}
-                    {b.type === 'paragraph' && (
-                      <div>
-                        <textarea
-                          className="w-full min-h-20 px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-                          disabled={preview}
-                          value={b.content || ''}
-                          onChange={(e) => updateBlock(b.id, { content: e.target.value })}
-                          style={{
-                            textAlign: b.alignment,
-                            fontSize: b.fontSize,
-                            lineHeight: b.lineHeight,
-                            margin: b.margin !== undefined ? b.margin : undefined,
-                            color: b.textColor,
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Image Block */}
-                    {b.type === 'image' && (
-                      <div>
-                        {!preview && (
-                          <div className="mb-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleImageFile(file, b.id);
-                              }}
-                            />
-                          </div>
-                        )}
-
-                        {b.content ? (
-                          <img
-                            src={b.content}
-                            alt={b.alt || ''}
-                            className="max-w-full block"
-                            style={{
-                              width: b.width ? `${b.width}px` : 'auto',
-                              borderRadius: b.borderRadius,
-                              margin: b.margin !== undefined ? b.margin : undefined,
-                              display: b.alignment === 'center' ? 'block' : undefined,
-                              marginLeft:
-                                b.alignment === 'center' ? 'auto' : b.alignment === 'right' ? 'auto' : undefined,
-                              marginRight:
-                                b.alignment === 'center' ? 'auto' : b.alignment === 'left' ? 'auto' : undefined,
-                            }}
-                          />
-                        ) : (
-                          <div className="p-3 border border-dashed border-gray-300 rounded-md text-gray-500">
-                            No image selected
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Button Block */}
-                    {b.type === 'button' && (
-                      <div>
-                        {preview ? (
-                          <button
-                            className="px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity cursor-pointer inline-block"
-                            style={{
-                              backgroundColor: b.backgroundColor,
-                              color: b.textColor,
-                              borderRadius: b.borderRadius,
-                              padding: b.padding,
-                              fontSize: b.fontSize,
-                              fontWeight: b.fontWeight,
-                              margin: b.margin !== undefined ? b.margin : undefined,
-                            }}
-                            onClick={() => window.open(b.url, '_blank')}
-                          >
-                            {b.content || 'Button'}
-                          </button>
-                        ) : (
-                          <a
-                            href={b.url || '#'}
-                            contentEditable
-                            suppressContentEditableWarning
-                            className="email-button"
-                            onBlur={(e) => updateBlock(b.id, { content: e.currentTarget.innerText })}
-                            style={{
-                              backgroundColor: b.backgroundColor,
-                              color: b.textColor,
-                              borderRadius: b.borderRadius,
-                              padding: b.padding,
-                              fontSize: b.fontSize,
-                              fontWeight: b.fontWeight,
-                              margin: b.margin !== undefined ? b.margin : undefined,
-                            }}
-                          >
-                            {b.content || 'Button'}
-                          </a>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Divider Block */}
-                    {b.type === 'divider' && (
-                      <div>
-                        <hr
-                          style={{
-                            height: b.thickness,
-                            backgroundColor: b.dividerColor,
-                            border: 'none',
-                            margin: b.margin !== undefined ? b.margin : undefined,
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Spacer Block */}
-                    {b.type === 'spacer' && (
-                      <div>
-                        <div
-                          className="bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm"
-                          style={{
-                            height: b.spacerHeight,
-                            margin: b.margin !== undefined ? b.margin : undefined,
-                          }}
-                        >
-                          {!preview && `${b.spacerHeight || 20}px`}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {blocks.map((b, i) => renderBlock(b, i))}
 
                 {/* Add Block Button */}
                 {!preview && (

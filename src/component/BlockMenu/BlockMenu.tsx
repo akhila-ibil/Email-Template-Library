@@ -18,6 +18,8 @@ export default function AddBlockMenu({ addBlock, show, onClose }: AddBlockMenuPr
     { type: 'image', label: 'Image', icon: '/image.svg' },
     { type: 'divider', label: 'Divider', icon: '/divider.svg' },
     { type: 'spacer', label: 'Spacer', icon: '/spacer.svg' },
+    { type: 'container', label: 'Container', icon: '/container.svg' },
+    { type: 'columns', label: 'Columns', icon: '/columns.svg' },
   ];
 
   return (

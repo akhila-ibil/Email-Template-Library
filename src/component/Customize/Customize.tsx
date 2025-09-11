@@ -563,6 +563,165 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                 )}
               </>
             )}
+            {/* Container Block */}
+            {block.type === 'container' && (
+              <>
+                {blockField(
+                  'Background Color',
+                  <input
+                    type="color"
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                    value={block.backgroundColor || '#f8f9fa'}
+                    onChange={(e) => updateBlock(block.id, { backgroundColor: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Border Color',
+                  <input
+                    type="color"
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                    value={block.borderColor || '#e5e7eb'}
+                    onChange={(e) => updateBlock(block.id, { borderColor: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Border Width (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.borderWidth || 1}
+                    min={0}
+                    max={10}
+                    onChange={(e) => updateBlock(block.id, { borderWidth: parseInt(e.target.value) || 1 })}
+                  />
+                )}
+                {blockField(
+                  'Border Radius (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.borderRadius || 4}
+                    min={0}
+                    max={50}
+                    onChange={(e) => updateBlock(block.id, { borderRadius: parseInt(e.target.value) || 4 })}
+                  />
+                )}
+                {blockField(
+                  'Padding (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.padding || 16}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { padding: parseInt(e.target.value) || 16 })}
+                  />
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
+              </>
+            )}
+
+            {/* Columns Block */}
+            {block.type === 'columns' && (
+              <>
+                {blockField(
+                  'Number of Columns',
+                  <select
+                    value={block.columnCount || 2}
+                    onChange={(e) => updateBlock(block.id, { columnCount: parseInt(e.target.value) || 2 })}
+                    className="w-full px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value={1}>1 Column</option>
+                    <option value={2}>2 Columns</option>
+                    <option value={3}>3 Columns</option>
+                    <option value={4}>4 Columns</option>
+                  </select>
+                )}
+                {blockField(
+                  'Column Gap (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.columnGap || 16}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { columnGap: parseInt(e.target.value) || 16 })}
+                  />
+                )}
+                {blockField(
+                  'Background Color',
+                  <input
+                    type="color"
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                    value={block.backgroundColor || 'transparent'}
+                    onChange={(e) => updateBlock(block.id, { backgroundColor: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Border Color',
+                  <input
+                    type="color"
+                    className="w-full h-10 border border-gray-300 rounded-md"
+                    value={block.borderColor || '#e5e7eb'}
+                    onChange={(e) => updateBlock(block.id, { borderColor: e.target.value })}
+                  />
+                )}
+                {blockField(
+                  'Border Width (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.borderWidth || 1}
+                    min={0}
+                    max={10}
+                    onChange={(e) => updateBlock(block.id, { borderWidth: parseInt(e.target.value) || 1 })}
+                  />
+                )}
+                {blockField(
+                  'Border Radius (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.borderRadius || 4}
+                    min={0}
+                    max={50}
+                    onChange={(e) => updateBlock(block.id, { borderRadius: parseInt(e.target.value) || 4 })}
+                  />
+                )}
+                {blockField(
+                  'Padding (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.padding || 16}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { padding: parseInt(e.target.value) || 16 })}
+                  />
+                )}
+                {blockField(
+                  'Margin (px)',
+                  <input
+                    type="number"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={block.margin || 0}
+                    min={0}
+                    max={100}
+                    onChange={(e) => updateBlock(block.id, { margin: parseInt(e.target.value) || 0 })}
+                  />
+                )}
+              </>
+            )}
           </>
         )}
       </div>
