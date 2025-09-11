@@ -19,7 +19,6 @@ export type Block = {
   thickness?: number; // divider thickness
   dividerColor?: string; // divider color
   spacerHeight?: number; // spacer height
-  // New style fields for advanced customization
   alignment?: 'left' | 'center' | 'right';
   fontSize?: number;
   fontWeight?: 'normal' | 'bold' | 'bolder' | 'lighter';
@@ -27,12 +26,12 @@ export type Block = {
   margin?: number;
   borderRadius?: number;
   padding?: number;
-  // New fields for container and columns
   borderColor?: string;
   borderWidth?: number;
   columnCount?: number; // for columns block
   columnGap?: number; // for columns block
-  children?: Block[]; // nested blocks for container and columns
+  columns?: Block[][]; // only for type === 'columns'
+  children?: Block[];
 };
 export default function TailwindEmailBuilder(): JSX.Element {
   const [blocks, setBlocks] = useState<Block[]>([]);
@@ -75,7 +74,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
   }, [savedBlocks]);
 
   // helpers
-  const addBlock = (type: Block['type'], insertAt?: number, parentId?: string) => {
+  const addBlock = (type: Block['type'], insertAt?: number, parentId?: string, columnIndex?: number) => {
     const newBlock: Block = {
       id: Date.now().toString(),
       type,
@@ -99,82 +98,118 @@ export default function TailwindEmailBuilder(): JSX.Element {
       padding: type === 'container' || type === 'columns' ? 16 : undefined,
       columnCount: type === 'columns' ? 2 : undefined,
       columnGap: type === 'columns' ? 16 : undefined,
-      children: type === 'container' || type === 'columns' ? [] : undefined,
+      columns: type === 'columns' ? Array.from({ length: 2 }, () => []) : undefined,
+      children: type === 'container' ? [] : undefined,
     };
 
     if (parentId) {
-      // Add to nested children
-      setBlocks((prev) => addToNested(prev, parentId, newBlock, insertAt));
+      setBlocks((prev) => addToNested(prev, parentId, newBlock, insertAt, columnIndex));
     } else {
-      // Add to root level
       const copy = [...blocks];
       if (insertAt !== undefined) copy.splice(insertAt, 0, newBlock);
       else copy.push(newBlock);
       setBlocks(copy);
     }
   };
-  // Helper function to add blocks to nested children
-  const addToNested = (blocks: Block[], parentId: string, newBlock: Block, insertAt?: number): Block[] => {
-    return blocks.map((block) => {
+
+  const addToNested = (
+    blocks: Block[],
+    parentId: string,
+    newBlock: Block,
+    insertAt?: number,
+    columnIndex?: number
+  ): Block[] =>
+    blocks.map((block) => {
       if (block.id === parentId) {
-        const children = block.children || [];
-        if (insertAt !== undefined) {
-          children.splice(insertAt, 0, newBlock);
+        if (block.type === 'columns' && columnIndex !== undefined) {
+          const columns = block.columns ? [...block.columns] : [];
+          if (!columns[columnIndex]) columns[columnIndex] = [];
+          const col = [...columns[columnIndex]];
+
+          if (insertAt !== undefined) col.splice(insertAt, 0, newBlock);
+          else col.push(newBlock);
+
+          columns[columnIndex] = col;
+          return { ...block, columns };
         } else {
-          children.push(newBlock);
+          const children = block.children ? [...block.children] : [];
+          if (insertAt !== undefined) children.splice(insertAt, 0, newBlock);
+          else children.push(newBlock);
+          return { ...block, children };
         }
-        return { ...block, children: [...children] };
       }
+
+      // 🔑 Only recurse if this is not the parent
       if (block.children) {
-        return { ...block, children: addToNested(block.children, parentId, newBlock, insertAt) };
+        return {
+          ...block,
+          children: addToNested(block.children, parentId, newBlock, insertAt, columnIndex),
+        };
       }
+
+      if (block.columns) {
+        return {
+          ...block,
+          columns: block.columns.map((col) => addToNested(col, parentId, newBlock, insertAt, columnIndex)),
+        };
+      }
+
       return block;
     });
-  };
+
   const updateBlock = (id: string, changes: Partial<Block>) => {
-    const updateNested = (blocks: Block[]): Block[] => {
-      return blocks.map((block) => {
-        if (block.id === id) {
-          return { ...block, ...changes };
-        }
+    const updateNested = (blocks: Block[]): Block[] =>
+      blocks.map((block) => {
+        if (block.id === id) return { ...block, ...changes };
+
         if (block.children) {
           return { ...block, children: updateNested(block.children) };
         }
+
+        if (block.columns) {
+          return {
+            ...block,
+            columns: block.columns.map((col) => updateNested(col)),
+          };
+        }
+
         return block;
       });
-    };
 
     setBlocks(updateNested);
-    if (inspecting?.id === id) setInspecting((p) => (p ? { ...p, ...changes } : p));
+    if (inspecting?.id === id) {
+      setInspecting((p) => (p ? { ...p, ...changes } : p));
+    }
   };
 
-  // Updated deleteBlock function to handle nested blocks
   const deleteBlock = (id: string) => {
-    const deleteFromNested = (blocks: Block[]): Block[] => {
-      return blocks.reduce((acc: Block[], block) => {
-        if (block.id === id) {
-          // Skip this block (delete it)
-          return acc;
-        }
+    const deleteFromNested = (blocks: Block[]): Block[] =>
+      blocks.reduce((acc: Block[], block) => {
+        if (block.id === id) return acc;
+
         if (block.children) {
-          // Recursively delete from children
-          const updatedBlock = { ...block, children: deleteFromNested(block.children) };
-          acc.push(updatedBlock);
-        } else {
-          acc.push(block);
+          return [...acc, { ...block, children: deleteFromNested(block.children) }];
         }
-        return acc;
+
+        if (block.columns) {
+          return [
+            ...acc,
+            {
+              ...block,
+              columns: block.columns.map((col) => deleteFromNested(col)),
+            },
+          ];
+        }
+
+        return [...acc, block];
       }, []);
-    };
 
     setBlocks(deleteFromNested);
     if (inspecting?.id === id) setInspecting(null);
   };
 
-  // Updated moveBlock function to handle nested blocks
   const moveBlock = (id: string, dir: 'up' | 'down') => {
     const moveInNested = (blocks: Block[]): Block[] => {
-      // First, try to move at this level
       const idx = blocks.findIndex((b) => b.id === id);
       if (idx !== -1) {
         const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
@@ -183,14 +218,21 @@ export default function TailwindEmailBuilder(): JSX.Element {
           [arr[idx], arr[swapIdx]] = [arr[swapIdx], arr[idx]];
           return arr;
         }
-        return blocks; // Can't move, return unchanged
+        return blocks;
       }
 
-      // If not found at this level, recursively search in children
       return blocks.map((block) => {
-        if (block.children && block.children.length > 0) {
+        if (block.children) {
           return { ...block, children: moveInNested(block.children) };
         }
+
+        if (block.columns) {
+          return {
+            ...block,
+            columns: block.columns.map((col) => moveInNested(col)),
+          };
+        }
+
         return block;
       });
     };
@@ -303,9 +345,11 @@ export default function TailwindEmailBuilder(): JSX.Element {
   const AddButton = ({
     onAdd,
     parentId,
+    columnIndex,
   }: {
-    onAdd: (type: Block['type'], insertAt?: number, parentId?: string) => void;
+    onAdd: (type: Block['type'], insertAt?: number, parentId?: string, columnIndex?: number) => void;
     parentId?: string;
+    columnIndex?: number;
   }) => {
     const [showMenu, setShowMenu] = useState(false);
 
@@ -320,7 +364,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
         {showMenu && (
           <AddBlockMenu
             addBlock={(type) => {
-              onAdd(type, undefined, parentId);
+              onAdd(type, undefined, parentId, columnIndex);
               setShowMenu(false);
             }}
             show={showMenu}
@@ -334,15 +378,16 @@ export default function TailwindEmailBuilder(): JSX.Element {
     <div
       key={block.id}
       draggable={!preview}
+      onClick={(e) => {
+        e.stopPropagation();
+        setInspecting(block);
+      }}
       onDragStart={(e) => onCanvasDragStart(e, index, block.id)}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => handleDrop(e, index)}
       className={`relative p-3 rounded-md mb-3 ${
         isNested ? 'bg-gray-50/30' : 'bg-blue-50/30'
       } hover:border-gray-300 transition-colors ${inspecting?.id === block.id ? 'ring-2 ring-blue-400' : ''}`}
-      onClick={() => {
-        if (!preview) setInspecting(block);
-      }}
       style={{ cursor: !preview ? 'pointer' : undefined }}
     >
       {/* Action Bar */}
@@ -548,6 +593,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
       )}
 
       {/* Columns Block */}
+
       {block.type === 'columns' && (
         <div>
           <div
@@ -566,8 +612,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
             }}
           >
             {Array.from({ length: block.columnCount || 2 }).map((_, colIndex) => {
-              const columnChildren =
-                block.children?.filter((_, index) => index % (block.columnCount || 2) === colIndex) || [];
+              const columnChildren = block.columns?.[colIndex] || [];
 
               return (
                 <div
@@ -580,14 +625,14 @@ export default function TailwindEmailBuilder(): JSX.Element {
                       {columnChildren.map((child, childIndex) => renderBlock(child, childIndex, true, block.id))}
                       {!preview && (
                         <div className="flex justify-center mt-2">
-                          <AddButton onAdd={addBlock} parentId={block.id} />
+                          <AddButton onAdd={addBlock} parentId={block.id} columnIndex={colIndex} />
                         </div>
                       )}
                     </>
                   ) : (
                     <div className="text-center text-gray-400 py-4 h-full flex flex-col justify-center">
                       <p className="mb-2 text-xs">Column {colIndex + 1}</p>
-                      {!preview && <AddButton onAdd={addBlock} parentId={block.id} />}
+                      {!preview && <AddButton onAdd={addBlock} parentId={block.id} columnIndex={colIndex} />}
                     </div>
                   )}
                 </div>
@@ -670,7 +715,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
             }}
           >
             {preview ? (
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: exportHTML() }} />
+              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: exportHTML() }}></div>
             ) : (
               <>
                 {blocks.length === 0 && (
