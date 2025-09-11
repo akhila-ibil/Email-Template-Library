@@ -16,7 +16,10 @@ const defaultTemplates: Template[] = [
     name: 'Welcome',
     blocks: [
       { type: 'heading', content: 'Welcome to Our Service!' },
-      { type: 'paragraph', content: 'We are excited to have you on board. Get started by exploring our features.' },
+      {
+        type: 'paragraph',
+        content: 'We are excited to have you on board. Get started by exploring our features.',
+      },
       {
         type: 'button',
         content: 'Get Started',
@@ -24,8 +27,6 @@ const defaultTemplates: Template[] = [
         backgroundColor: '#007bff',
         textColor: '#fff',
       },
-      { type: 'divider', thickness: 1, dividerColor: '#e5e7eb' },
-      { type: 'paragraph', content: 'If you have any questions, just reply to this email.' },
     ],
   },
   {
@@ -33,7 +34,6 @@ const defaultTemplates: Template[] = [
     blocks: [
       { type: 'heading', content: 'Your Receipt' },
       { type: 'paragraph', content: 'Thank you for your purchase! Here are your order details:' },
-      { type: 'divider', thickness: 1, dividerColor: '#e5e7eb' },
       { type: 'paragraph', content: 'Order #123456\nTotal: $49.99' },
       {
         type: 'button',
@@ -50,7 +50,6 @@ const defaultTemplates: Template[] = [
       { type: 'heading', content: 'Your One-Time Passcode' },
       { type: 'paragraph', content: 'Use the code below to sign in:' },
       { type: 'heading', content: '123456', level: 2 },
-      { type: 'paragraph', content: 'This code will expire in 10 minutes.' },
     ],
   },
   {
@@ -68,20 +67,20 @@ const defaultTemplates: Template[] = [
     ],
   },
 ];
-
 export default function Sidebar({ onTemplateSelect }: SidebarProps) {
   return (
     <div className="w-72 border-r border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
       <div className="font-bold mb-3 text-gray-800">Templates</div>
-      <ul className="flex flex-col gap-1">
+      <ul className="flex flex-col gap-2">
         {defaultTemplates.map((tpl) => (
           <li
             key={tpl.name}
-            className="px-3 py-2 rounded cursor-pointer hover:bg-blue-50 transition-colors font-medium text-gray-700 border border-transparent hover:border-blue-200"
-            style={{ background: tpl.name === 'Blank' ? '#f9fafb' : '#f3f4f6' }}
+            className="flex items-center justify-between px-3 py-2 rounded cursor-pointer hover:bg-blue-50 transition-colors font-medium text-gray-700 border border-transparent hover:border-blue-200"
             onClick={() => onTemplateSelect(tpl.blocks)}
+            style={{ background: tpl.name === 'Blank' ? '#f9fafb' : '' }}
           >
-            {tpl.name}
+            <span>{tpl.name}</span>
+            {/* {getTemplatePreview(tpl.blocks, tpl.name)} */}
           </li>
         ))}
       </ul>
