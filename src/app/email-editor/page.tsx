@@ -39,6 +39,8 @@ export default function TailwindEmailBuilder(): JSX.Element {
   const [globalStyle, setGlobalStyle] = useState({
     backdropColor: '#F2F5F7',
     canvasColor: '#FFFFFF',
+    canvasBorderColor: '#e5e7eb',
+    canvasBorderRadius: 8,
     textColor: '#242424',
     fontFamily: 'Inter, Arial, sans-serif',
     padding: 20,
@@ -283,14 +285,14 @@ export default function TailwindEmailBuilder(): JSX.Element {
             </button>
           </div>
           <div
-            className={`rounded-lg min-h-96 border border-gray-200 w-full ${
-              viewMode === 'mobile' ? 'max-w-xs' : 'max-w-3xl'
-            }`}
+            className={`min-h-96 w-full ${viewMode === 'mobile' ? 'max-w-xs' : 'max-w-3xl'}`}
             style={{
               background: globalStyle.canvasColor,
               color: globalStyle.textColor,
               fontFamily: globalStyle.fontFamily,
               padding: globalStyle.padding,
+              border: `1px solid ${globalStyle.canvasBorderColor || '#e5e7eb'}`,
+              borderRadius: globalStyle.canvasBorderRadius ?? 0,
               ...(viewMode === 'mobile' ? { minHeight: '600px' } : {}),
             }}
           >
@@ -311,10 +313,16 @@ export default function TailwindEmailBuilder(): JSX.Element {
                     onDragStart={(e) => onCanvasDragStart(e, i, b.id)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDrop(e, i)}
-                    className="relative border border-gray-200 p-3 rounded-md mb-3 bg-blue-50/30 hover:border-gray-300 transition-colors"
+                    className={`relative p-3 rounded-md mb-3 bg-blue-50/30 hover:border-gray-300 transition-colors ${
+                      inspecting?.id === b.id ? 'ring-2 ring-blue-400' : ''
+                    }`}
+                    onClick={() => {
+                      if (!preview) setInspecting(b);
+                    }}
+                    style={{ cursor: !preview ? 'pointer' : undefined }}
                   >
-                    {/* Action Bar */}
-                    {!preview && (
+                    {/* Action Bar: Only show when this block is selected (inspecting) and not in preview */}
+                    {!preview && inspecting?.id === b.id && (
                       <div className="absolute -top-9 right-1.5 flex gap-1.5">
                         <button
                           className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
@@ -328,15 +336,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                         >
                           ↓
                         </button>
-                        <button
-                          className="px-2 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-xs transition-colors"
-                          onClick={() => setInspecting(b)}
-                          title="Inspect"
-                        >
-                          <span>
-                            <img src="/edit.svg" alt="Image" className="w-3 h-3" />
-                          </span>{' '}
-                        </button>
+                        {/* Removed Inspect icon button, block is now clickable to select */}
                         <button
                           className="px-2 py-1.5 rounded-md border border-gray-300 bg-red-50 hover:bg-red-100 text-xs transition-colors"
                           onClick={() => deleteBlock(b.id)}
@@ -347,38 +347,49 @@ export default function TailwindEmailBuilder(): JSX.Element {
                     )}
 
                     {/* Block Content */}
+
+                    {/* Heading Block */}
                     {b.type === 'heading' && (
                       <div>
-                        <div className="mb-1.5 text-gray-500 text-xs">Heading</div>
-                        <div>
-                          <input
-                            className={`w-full px-2.5 py-2 rounded-md border border-gray-300 ${
-                              b.level === 1 ? 'text-xl' : b.level === 2 ? 'text-lg' : 'text-base'
-                            } font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                            disabled={preview}
-                            value={b.content || ''}
-                            onChange={(e) => updateBlock(b.id, { content: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {b.type === 'paragraph' && (
-                      <div>
-                        <div className="mb-1.5 text-gray-500 text-xs">Paragraph</div>
-                        <textarea
-                          className="w-full min-h-20 px-2.5 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                        <input
+                          className={`w-full px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                           disabled={preview}
                           value={b.content || ''}
                           onChange={(e) => updateBlock(b.id, { content: e.target.value })}
+                          style={{
+                            textAlign: b.alignment,
+                            fontSize: b.fontSize,
+                            fontWeight: b.fontWeight,
+                            lineHeight: b.lineHeight,
+                            margin: b.margin !== undefined ? b.margin : undefined,
+                            color: b.textColor,
+                          }}
                         />
                       </div>
                     )}
 
+                    {/* Paragraph Block */}
+                    {b.type === 'paragraph' && (
+                      <div>
+                        <textarea
+                          className="w-full min-h-20 px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                          disabled={preview}
+                          value={b.content || ''}
+                          onChange={(e) => updateBlock(b.id, { content: e.target.value })}
+                          style={{
+                            textAlign: b.alignment,
+                            fontSize: b.fontSize,
+                            lineHeight: b.lineHeight,
+                            margin: b.margin !== undefined ? b.margin : undefined,
+                            color: b.textColor,
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Image Block */}
                     {b.type === 'image' && (
                       <div>
-                        <div className="mb-1.5 text-gray-500 text-xs">Image</div>
-
                         {!preview && (
                           <div className="mb-2">
                             <input
@@ -398,7 +409,16 @@ export default function TailwindEmailBuilder(): JSX.Element {
                             src={b.content}
                             alt={b.alt || ''}
                             className="max-w-full block"
-                            style={{ width: b.width ? `${b.width}px` : 'auto' }}
+                            style={{
+                              width: b.width ? `${b.width}px` : 'auto',
+                              borderRadius: b.borderRadius,
+                              margin: b.margin !== undefined ? b.margin : undefined,
+                              display: b.alignment === 'center' ? 'block' : undefined,
+                              marginLeft:
+                                b.alignment === 'center' ? 'auto' : b.alignment === 'right' ? 'auto' : undefined,
+                              marginRight:
+                                b.alignment === 'center' ? 'auto' : b.alignment === 'left' ? 'auto' : undefined,
+                            }}
                           />
                         ) : (
                           <div className="p-3 border border-dashed border-gray-300 rounded-md text-gray-500">
@@ -407,16 +427,21 @@ export default function TailwindEmailBuilder(): JSX.Element {
                         )}
                       </div>
                     )}
+
+                    {/* Button Block */}
                     {b.type === 'button' && (
                       <div>
-                        <div className="mb-1.5 text-gray-500 text-xs">Button</div>
-
                         {preview ? (
                           <button
                             className="px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity cursor-pointer inline-block"
                             style={{
-                              backgroundColor: b.backgroundColor || '#007bff',
-                              color: b.textColor || '#ffffff',
+                              backgroundColor: b.backgroundColor,
+                              color: b.textColor,
+                              borderRadius: b.borderRadius,
+                              padding: b.padding,
+                              fontSize: b.fontSize,
+                              fontWeight: b.fontWeight,
+                              margin: b.margin !== undefined ? b.margin : undefined,
                             }}
                             onClick={() => window.open(b.url, '_blank')}
                           >
@@ -430,8 +455,13 @@ export default function TailwindEmailBuilder(): JSX.Element {
                             className="email-button"
                             onBlur={(e) => updateBlock(b.id, { content: e.currentTarget.innerText })}
                             style={{
-                              backgroundColor: b.backgroundColor || '#007bff',
-                              color: b.textColor || '#ffffff',
+                              backgroundColor: b.backgroundColor,
+                              color: b.textColor,
+                              borderRadius: b.borderRadius,
+                              padding: b.padding,
+                              fontSize: b.fontSize,
+                              fontWeight: b.fontWeight,
+                              margin: b.margin !== undefined ? b.margin : undefined,
                             }}
                           >
                             {b.content || 'Button'}
@@ -439,26 +469,30 @@ export default function TailwindEmailBuilder(): JSX.Element {
                         )}
                       </div>
                     )}
+
+                    {/* Divider Block */}
                     {b.type === 'divider' && (
                       <div>
-                        <div className="mb-1.5 text-gray-500 text-xs">Divider</div>
                         <hr
                           style={{
-                            height: `${b.thickness || 1}px`,
-                            backgroundColor: b.dividerColor || '#e5e7eb',
+                            height: b.thickness,
+                            backgroundColor: b.dividerColor,
                             border: 'none',
-                            margin: '20px 0',
+                            margin: b.margin !== undefined ? b.margin : undefined,
                           }}
                         />
                       </div>
                     )}
 
+                    {/* Spacer Block */}
                     {b.type === 'spacer' && (
                       <div>
-                        <div className="mb-1.5 text-gray-500 text-xs">Spacer</div>
                         <div
                           className="bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm"
-                          style={{ height: `${b.spacerHeight || 20}px` }}
+                          style={{
+                            height: b.spacerHeight,
+                            margin: b.margin !== undefined ? b.margin : undefined,
+                          }}
                         >
                           {!preview && `${b.spacerHeight || 20}px`}
                         </div>
