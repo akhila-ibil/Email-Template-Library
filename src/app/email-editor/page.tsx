@@ -788,18 +788,8 @@ export default function TailwindEmailBuilder(): JSX.Element {
         background: globalStyle.backdropColor,
       }}
     >
-      <Navbar
-        preview={preview}
-        setPreview={setPreview}
-        viewJSON={viewJSON}
-        viewHTML={viewHTML}
-        exportHTML={exportHTML}
-        setBlocks={setBlocks}
-        setInspecting={setInspecting}
-        togglePreview={togglePreview}
-      />
       {/* Main content area below navbar, height minus navbar (56px) */}
-      <div className="flex" style={{ height: 'calc(100vh - 70px)' }}>
+      <div className="flex h-screen ">
         {/* Sidebar */}
         <Sidebar
           onTemplateSelect={(blocks) => {
@@ -811,71 +801,83 @@ export default function TailwindEmailBuilder(): JSX.Element {
             );
           }}
         />
+        <div className="w-full">
+          <Navbar
+            preview={preview}
+            setPreview={setPreview}
+            viewJSON={viewJSON}
+            viewHTML={viewHTML}
+            exportHTML={exportHTML}
+            setBlocks={setBlocks}
+            setInspecting={setInspecting}
+            togglePreview={togglePreview}
+          />
 
-        {/* Main editor canvas */}
-        <div className="flex-1 overflow-auto flex flex-col">
-          {showHTMLPreview ? (
-            <>
-              {/* Toolbar */}
-              <div className="flex justify-between items-center bg-background px-4 py-2 border-b">
-                <h3 className="font-medium text-gray-700">HTML Preview</h3>
-                <Button
-                  onClick={handleCopyHTML}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                    htmlCopied
-                      ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
-                      : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
-                  }`}
-                >
-                  {htmlCopied ? '✓ Copied' : 'Copy'}
-                </Button>
-              </div>
-              {/* Code Preview */}
-              <pre className="flex-1 bg-gray-900 text-green-200 p-4 overflow-auto whitespace-pre-wrap">
-                {htmlPreview}
-              </pre>
-            </>
-          ) : showJSONPreview ? (
-            <>
-              <div className="flex justify-between items-center bg-background px-4 py-2 border-b">
-                <h3 className="font-medium text-gray-700">JSON Preview</h3>
-                <Button
-                  onClick={handleCopyJSON}
-                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                    jsonCopied
-                      ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
-                      : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
-                  }`}
-                >
-                  {jsonCopied ? '✓ Copied' : 'Copy'}
-                </Button>
-              </div>
-              <pre className="flex-1 bg-gray-900 text-yellow-200 p-4 overflow-auto whitespace-pre-wrap">
-                {JSON.stringify(blocks, null, 2)}
-              </pre>
-            </>
-          ) : (
-            <MainEditorCanvas
-              setViewMode={setViewMode}
-              blocks={blocks}
-              preview={preview}
-              viewMode={viewMode}
-              globalStyle={globalStyle}
-              showAddMenu={showAddMenu}
-              setShowAddMenu={setShowAddMenu}
-              renderBlock={renderBlock}
-              handleDrop={handleDrop}
-              exportHTML={exportHTML}
-              addBlock={addBlock}
-              htmlPreview={htmlPreview} //html preview state
-              showHTMLPreview={showHTMLPreview}
-              showJSONPreview={showJSONPreview}
-              handleCopyHTML={handleCopyHTML}
-              handleCopyJSON={handleCopyJSON}
-              htmlCopied={htmlCopied}
-              jsonCopied={jsonCopied}
-            />
-          )}
+          {/* Main editor canvas */}
+          <div className="flex-1 overflow-auto flex flex-col" style={{ height: 'calc(100vh - 70px)' }}>
+            {showHTMLPreview ? (
+              <>
+                {/* Toolbar */}
+                <div className="flex justify-between items-center bg-background px-4 py-2 border-b">
+                  <h3 className="font-medium text-gray-700">HTML Preview</h3>
+                  <Button
+                    onClick={handleCopyHTML}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                      htmlCopied
+                        ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
+                        : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
+                    }`}
+                  >
+                    {htmlCopied ? '✓ Copied' : 'Copy'}
+                  </Button>
+                </div>
+                {/* Code Preview */}
+                <pre className="flex-1 bg-gray-900 text-green-200 p-4 overflow-auto whitespace-pre-wrap">
+                  {htmlPreview}
+                </pre>
+              </>
+            ) : showJSONPreview ? (
+              <>
+                <div className="flex justify-between items-center bg-background px-4 py-2 border-b">
+                  <h3 className="font-medium text-gray-700">JSON Preview</h3>
+                  <Button
+                    onClick={handleCopyJSON}
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                      jsonCopied
+                        ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
+                        : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
+                    }`}
+                  >
+                    {jsonCopied ? '✓ Copied' : 'Copy'}
+                  </Button>
+                </div>
+                <pre className="flex-1 bg-gray-900 text-yellow-200 p-4 overflow-auto whitespace-pre-wrap">
+                  {JSON.stringify(blocks, null, 2)}
+                </pre>
+              </>
+            ) : (
+              <MainEditorCanvas
+                setViewMode={setViewMode}
+                blocks={blocks}
+                preview={preview}
+                viewMode={viewMode}
+                globalStyle={globalStyle}
+                showAddMenu={showAddMenu}
+                setShowAddMenu={setShowAddMenu}
+                renderBlock={renderBlock}
+                handleDrop={handleDrop}
+                exportHTML={exportHTML}
+                addBlock={addBlock}
+                htmlPreview={htmlPreview} //html preview state
+                showHTMLPreview={showHTMLPreview}
+                showJSONPreview={showJSONPreview}
+                handleCopyHTML={handleCopyHTML}
+                handleCopyJSON={handleCopyJSON}
+                htmlCopied={htmlCopied}
+                jsonCopied={jsonCopied}
+              />
+            )}
+          </div>
         </div>
         {/* Inspector Panel */}
         <Customize

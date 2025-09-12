@@ -39,18 +39,20 @@ const Navbar: React.FC<NavbarProps> = ({
         <Button variant="outline" onClick={() => togglePreview(!preview)}>
           {preview ? 'Edit Mode' : 'Preview'}
         </Button>
+
+        <Button variant="outline" onClick={viewHTML}>
+          HTML
+        </Button>
+        <Button variant="outline" onClick={viewJSON}>
+          JSON
+        </Button>
+
         <Button
           className="bg-green-600 hover:bg-green-700 text-white border-green-700"
           variant="secondary"
           onClick={viewJSON}
         >
           Save
-        </Button>
-        <Button variant="outline" onClick={viewHTML}>
-          HTML
-        </Button>
-        <Button variant="outline" onClick={viewJSON}>
-          JSON
         </Button>
         <Button
           variant="destructive"
