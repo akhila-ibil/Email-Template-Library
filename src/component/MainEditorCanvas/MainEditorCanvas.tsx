@@ -14,6 +14,9 @@ interface MainEditorCanvasProps {
   setViewMode: (mode: 'website' | 'mobile') => void;
   exportHTML: () => string;
   addBlock: (type: Block['type']) => void;
+  htmlPreview?: string | null;
+  showHTMLPreview: boolean;
+  showJSONPreview: boolean;
 }
 
 const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
@@ -28,6 +31,9 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
   setViewMode,
   exportHTML,
   addBlock,
+  htmlPreview,
+  showHTMLPreview,
+  showJSONPreview,
 }) => {
   return (
     <div
@@ -69,37 +75,64 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
           ...(viewMode === 'mobile' ? { minHeight: '600px' } : {}),
         }}
       >
-        {preview ? (
-          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: exportHTML() }}></div>
-        ) : (
+        {/* HTML Preview */}
+        {showHTMLPreview && htmlPreview && (
+          <div className="w-full h-full">
+            <div className="bg-gray-100 p-2 rounded-t-md border-b">
+              <h3 className="text-sm font-medium text-gray-700">HTML Preview</h3>
+            </div>
+            <pre className="bg-gray-50 p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 border rounded-b-md">
+              {htmlPreview}
+            </pre>
+          </div>
+        )}
+
+        {/* JSON Preview */}
+        {showJSONPreview && (
+          <div className="w-full h-full">
+            <div className="bg-gray-100 p-2 rounded-t-md border-b">
+              <h3 className="text-sm font-medium text-gray-700">JSON Preview</h3>
+            </div>
+            <pre className="bg-gray-50 p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 border rounded-b-md">
+              {JSON.stringify(blocks, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        {/* Normal Preview/Edit Mode */}
+        {!showHTMLPreview && !showJSONPreview && (
           <>
-            {blocks.length === 0 && (
-              <div className="p-6 border border-dashed border-gray-300 rounded-md text-center text-gray-500 mb-3">
-                Drop blocks here or use the + Add Block menu below
-              </div>
-            )}
-
-            {blocks.map((b, i) => renderBlock(b, i))}
-
-            {/* Add Block Button */}
-            {!preview && (
-              <div className=" flex justify-center mt-4">
-                <div className="relative inline-block">
-                  <div className="flex ">
-                    <button
-                      className="px-3.5 py-2.5 rounded-md border hover:bg-gray-100 border-gray-300  text-center text-gray-500 transition-colors"
-                      onClick={() => setShowAddMenu(!showAddMenu)}
-                      aria-expanded={showAddMenu}
-                    >
-                      +
-                    </button>
+            {preview ? (
+              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: exportHTML() }}></div>
+            ) : (
+              <>
+                {blocks.length === 0 && (
+                  <div className="p-6 border border-dashed border-gray-300 rounded-md text-center text-gray-500 mb-3">
+                    Drop blocks here or use the + Add Block menu below
                   </div>
+                )}
 
-                  {showAddMenu && (
-                    <AddBlockMenu addBlock={addBlock} show={showAddMenu} onClose={() => setShowAddMenu(false)} />
-                  )}
+                {blocks.map((b, i) => renderBlock(b, i))}
+
+                {/* Add Block Button */}
+                <div className="flex justify-center mt-4">
+                  <div className="relative inline-block">
+                    <div className="flex">
+                      <button
+                        className="px-3.5 py-2.5 rounded-md border hover:bg-gray-100 border-gray-300 text-center text-gray-500 transition-colors"
+                        onClick={() => setShowAddMenu(!showAddMenu)}
+                        aria-expanded={showAddMenu}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {showAddMenu && (
+                      <AddBlockMenu addBlock={addBlock} show={showAddMenu} onClose={() => setShowAddMenu(false)} />
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </>
         )}

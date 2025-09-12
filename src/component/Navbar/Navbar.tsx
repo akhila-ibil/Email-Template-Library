@@ -8,6 +8,7 @@ type NavbarProps = {
   exportHTML: () => string;
   setBlocks: React.Dispatch<React.SetStateAction<any[]>>;
   setInspecting: React.Dispatch<React.SetStateAction<any>>;
+  togglePreview: (newPreviewState: boolean) => void;
 };
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -18,6 +19,7 @@ const Navbar: React.FC<NavbarProps> = ({
   exportHTML,
   setBlocks,
   setInspecting,
+  togglePreview,
 }) => {
   const [emailName, setEmailName] = useState('Untitled');
 
@@ -34,7 +36,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className="flex gap-2">
         <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={() => setPreview((p: boolean) => !p)}
+          onClick={() => togglePreview(!preview)}
         >
           {preview ? 'Edit Mode' : 'Preview'}
         </button>
@@ -44,26 +46,18 @@ const Navbar: React.FC<NavbarProps> = ({
         >
           Save
         </button>
-        {/* <button
+        <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
           onClick={copyHTML}
         >
           Copy HTML
-        </button> */}
-        {/* <button
+        </button>
+        <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={() => {
-            const html = exportHTML();
-            const w = window.open();
-            if (w) {
-              w.document.open();
-              w.document.write(html);
-              w.document.close();
-            }
-          }}
+          onClick={copyJSON}
         >
-          Open HTML Preview
-        </button> */}
+          Copy JSON
+        </button>
         <button
           className="px-3 py-2 rounded-md border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
           onClick={() => {

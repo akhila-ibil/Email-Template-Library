@@ -42,6 +42,9 @@ export default function TailwindEmailBuilder(): JSX.Element {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [inspecting, setInspecting] = useState<Block | null>(null);
   const [savedBlocks] = useState<Block[]>([]);
+  const [htmlPreview, setHtmlPreview] = useState<string | null>(null);
+  const [showHTMLPreview, setShowHTMLPreview] = useState(false);
+  const [showJSONPreview, setShowJSONPreview] = useState(false);
   const [globalStyle, setGlobalStyle] = useState({
     backdropColor: '#F2F5F7',
     canvasColor: '#FFFFFF',
@@ -419,23 +422,30 @@ export default function TailwindEmailBuilder(): JSX.Element {
     return `<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>\n<body style="margin: 0; padding: 20px; background-color: ${globalStyle.canvasColor}; color: ${globalStyle.textColor}; font-family: ${globalStyle.fontFamily};">\n${html}\n</body>\n</html>`;
   };
 
-  // copy JSON
-  const copyJSON = async () => {
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(blocks, null, 2));
-      alert('JSON copied to clipboard');
-    } catch {
-      alert('Copy failed');
-    }
-  };
-
   const copyHTML = async () => {
     const html = exportHTML();
-    try {
-      await navigator.clipboard.writeText(html);
-      alert('HTML copied to clipboard');
-    } catch {
-      alert('Copy failed');
+
+    setHtmlPreview(html);
+    setShowHTMLPreview(true);
+    setShowJSONPreview(false);
+    setPreview(false); // Exit normal preview mode
+  };
+
+  // 3. Update your copyJSON function:
+  const copyJSON = async () => {
+    const jsonString = JSON.stringify(blocks, null, 2);
+    setShowJSONPreview(true);
+    setShowHTMLPreview(false);
+    setPreview(false); // Exit normal preview mode
+  };
+
+  // 5. Update your setPreview function calls to also reset HTML/JSON preview:
+  const togglePreview = (newPreviewState: boolean) => {
+    setPreview(newPreviewState);
+    if (newPreviewState) {
+      setShowHTMLPreview(false);
+      setShowJSONPreview(false);
+      setHtmlPreview(null);
     }
   };
 
@@ -764,6 +774,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
         exportHTML={exportHTML}
         setBlocks={setBlocks}
         setInspecting={setInspecting}
+        togglePreview={togglePreview}
       />
       {/* Main content area below navbar, height minus navbar (56px) */}
       <div className="flex" style={{ height: 'calc(100vh - 70px)' }}>
@@ -792,6 +803,9 @@ export default function TailwindEmailBuilder(): JSX.Element {
           handleDrop={handleDrop}
           exportHTML={exportHTML}
           addBlock={addBlock}
+          htmlPreview={htmlPreview} //html preview state
+          showHTMLPreview={showHTMLPreview}
+          showJSONPreview={showJSONPreview}
         />
 
         {/* Inspector Panel */}
