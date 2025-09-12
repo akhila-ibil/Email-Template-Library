@@ -787,18 +787,8 @@ export default function TailwindEmailBuilder(): JSX.Element {
         background: globalStyle.backdropColor,
       }}
     >
-      <Navbar
-        preview={preview}
-        setPreview={setPreview}
-        viewJSON={viewJSON}
-        viewHTML={viewHTML}
-        exportHTML={exportHTML}
-        setBlocks={setBlocks}
-        setInspecting={setInspecting}
-        togglePreview={togglePreview}
-      />
       {/* Main content area below navbar, height minus navbar (56px) */}
-      <div className="flex" style={{ height: 'calc(100vh - 70px)' }}>
+      <div className="flex h-screen">
         {/* Sidebar */}
         <Sidebar
           onTemplateSelect={(blocks) => {
@@ -810,28 +800,40 @@ export default function TailwindEmailBuilder(): JSX.Element {
             );
           }}
         />
+        <div className="w-full">
+          <Navbar
+            preview={preview}
+            setPreview={setPreview}
+            viewJSON={viewJSON}
+            viewHTML={viewHTML}
+            exportHTML={exportHTML}
+            setBlocks={setBlocks}
+            setInspecting={setInspecting}
+            togglePreview={togglePreview}
+          />
 
-        {/* Main editor canvas */}
-        <MainEditorCanvas
-          setViewMode={setViewMode}
-          blocks={blocks}
-          preview={preview}
-          viewMode={viewMode}
-          globalStyle={globalStyle}
-          showAddMenu={showAddMenu}
-          setShowAddMenu={setShowAddMenu}
-          renderBlock={renderBlock}
-          handleDrop={handleDrop}
-          exportHTML={exportHTML}
-          addBlock={addBlock}
-          htmlPreview={htmlPreview} //html preview state
-          showHTMLPreview={showHTMLPreview}
-          showJSONPreview={showJSONPreview}
-          handleCopyHTML={handleCopyHTML}
-          handleCopyJSON={handleCopyJSON}
-          htmlCopied={htmlCopied}
-          jsonCopied={jsonCopied}
-        />
+          {/* Main editor canvas */}
+          <MainEditorCanvas
+            setViewMode={setViewMode}
+            blocks={blocks}
+            preview={preview}
+            viewMode={viewMode}
+            globalStyle={globalStyle}
+            showAddMenu={showAddMenu}
+            setShowAddMenu={setShowAddMenu}
+            renderBlock={renderBlock}
+            handleDrop={handleDrop}
+            exportHTML={exportHTML}
+            addBlock={addBlock}
+            htmlPreview={htmlPreview} //html preview state
+            showHTMLPreview={showHTMLPreview}
+            showJSONPreview={showJSONPreview}
+            handleCopyHTML={handleCopyHTML}
+            handleCopyJSON={handleCopyJSON}
+            htmlCopied={htmlCopied}
+            jsonCopied={jsonCopied}
+          />
+        </div>
 
         {/* Inspector Panel */}
         <Customize
