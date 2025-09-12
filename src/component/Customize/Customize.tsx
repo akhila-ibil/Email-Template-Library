@@ -31,10 +31,8 @@ const alignmentOptions = [
   { label: 'Right', value: 'right' },
 ];
 const fontWeightOptions = [
-  { label: 'Normal', value: 'normal' },
+  { label: 'Regular', value: 'normal' },
   { label: 'Bold', value: 'bold' },
-  { label: 'Bolder', value: 'bolder' },
-  { label: 'Lighter', value: 'lighter' },
 ];
 
 const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, globalStyle, setGlobalStyle }) => {
@@ -203,9 +201,7 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                   'Font Weight',
                   <select
                     value={block.fontWeight || 'bold'}
-                    onChange={(e) =>
-                      updateBlock(block.id, { fontWeight: e.target.value as 'normal' | 'bold' | 'bolder' | 'lighter' })
-                    }
+                    onChange={(e) => updateBlock(block.id, { fontWeight: e.target.value as 'normal' | 'bold' })}
                     className="w-full px-2.5 py-2 rounded-md border border-gray-300"
                   >
                     {fontWeightOptions.map((opt) => (
@@ -467,9 +463,7 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                   'Font Weight',
                   <select
                     value={block.fontWeight || 'bold'}
-                    onChange={(e) =>
-                      updateBlock(block.id, { fontWeight: e.target.value as 'normal' | 'bold' | 'bolder' | 'lighter' })
-                    }
+                    onChange={(e) => updateBlock(block.id, { fontWeight: e.target.value as 'normal' | 'bold' })}
                     className="w-full px-2.5 py-2 rounded-md border border-gray-300"
                   >
                     {fontWeightOptions.map((opt) => (

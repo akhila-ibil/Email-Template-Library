@@ -22,7 +22,7 @@ export type Block = {
   spacerHeight?: number; // spacer height
   alignment?: 'left' | 'center' | 'right';
   fontSize?: number;
-  fontWeight?: 'normal' | 'bold' | 'bolder' | 'lighter';
+  fontWeight?: 'normal' | 'bold';
   lineHeight?: number;
   margin?: number;
   borderRadius?: number;
@@ -45,6 +45,8 @@ export default function TailwindEmailBuilder(): JSX.Element {
   const [htmlPreview, setHtmlPreview] = useState<string | null>(null);
   const [showHTMLPreview, setShowHTMLPreview] = useState(false);
   const [showJSONPreview, setShowJSONPreview] = useState(false);
+  const [htmlCopied, setHtmlCopied] = useState(false);
+  const [jsonCopied, setJsonCopied] = useState(false);
   const [globalStyle, setGlobalStyle] = useState({
     backdropColor: '#F2F5F7',
     canvasColor: '#FFFFFF',
@@ -211,6 +213,28 @@ export default function TailwindEmailBuilder(): JSX.Element {
     if (inspecting?.id === id) setInspecting(null);
   };
 
+  const handleCopyHTML = async () => {
+    if (htmlPreview) {
+      try {
+        await navigator.clipboard.writeText(htmlPreview);
+        setHtmlCopied(true);
+        setTimeout(() => setHtmlCopied(false), 2000); // Reset after 2 seconds
+      } catch (error) {
+        console.error('Failed to copy HTML:', error);
+      }
+    }
+  };
+
+  const handleCopyJSON = async () => {
+    try {
+      const jsonString = JSON.stringify(blocks, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      setJsonCopied(true);
+      setTimeout(() => setJsonCopied(false), 2000); // Reset after 2 seconds
+    } catch (error) {
+      console.error('Failed to copy JSON:', error);
+    }
+  };
   const moveBlock = (id: string, dir: 'up' | 'down') => {
     const moveInNested = (blocks: Block[]): Block[] => {
       const idx = blocks.findIndex((b) => b.id === id);
@@ -348,9 +372,9 @@ export default function TailwindEmailBuilder(): JSX.Element {
         white-space: normal;
       `.trim();
         const containerStyle = `text-align: ${block.alignment || 'left'}; margin: ${block.margin || 0}px 0;`;
-        return `<div style="${containerStyle}"><a href="${block.url || '#'}" style="${style}">${escapeHtml(
-          block.content || 'Button'
-        )}</a></div>`;
+        return `<div style="${containerStyle}"><a target="_blank" href="${
+          block.url || '#'
+        }" style="${style}">${escapeHtml(block.content || 'Button')}</a></div>`;
       }
 
       if (block.type === 'divider') {
@@ -422,9 +446,8 @@ export default function TailwindEmailBuilder(): JSX.Element {
     return `<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>\n<body style="margin: 0; padding: 20px; background-color: ${globalStyle.canvasColor}; color: ${globalStyle.textColor}; font-family: ${globalStyle.fontFamily};">\n${html}\n</body>\n</html>`;
   };
 
-  const copyHTML = async () => {
+  const viewHTML = async () => {
     const html = exportHTML();
-
     setHtmlPreview(html);
     setShowHTMLPreview(true);
     setShowJSONPreview(false);
@@ -432,7 +455,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
   };
 
   // 3. Update your copyJSON function:
-  const copyJSON = async () => {
+  const viewJSON = async () => {
     const jsonString = JSON.stringify(blocks, null, 2);
     setShowJSONPreview(true);
     setShowHTMLPreview(false);
@@ -762,15 +785,13 @@ export default function TailwindEmailBuilder(): JSX.Element {
       className="min-h-screen"
       style={{
         background: globalStyle.backdropColor,
-        color: globalStyle.textColor,
-        fontFamily: globalStyle.fontFamily,
       }}
     >
       <Navbar
         preview={preview}
         setPreview={setPreview}
-        copyJSON={copyJSON}
-        copyHTML={copyHTML}
+        viewJSON={viewJSON}
+        viewHTML={viewHTML}
         exportHTML={exportHTML}
         setBlocks={setBlocks}
         setInspecting={setInspecting}
@@ -806,6 +827,10 @@ export default function TailwindEmailBuilder(): JSX.Element {
           htmlPreview={htmlPreview} //html preview state
           showHTMLPreview={showHTMLPreview}
           showJSONPreview={showJSONPreview}
+          handleCopyHTML={handleCopyHTML}
+          handleCopyJSON={handleCopyJSON}
+          htmlCopied={htmlCopied}
+          jsonCopied={jsonCopied}
         />
 
         {/* Inspector Panel */}

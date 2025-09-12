@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 type NavbarProps = {
   preview: boolean;
   setPreview: React.Dispatch<React.SetStateAction<boolean>>;
-  copyJSON: () => void;
-  copyHTML: () => void;
+  viewJSON: () => void;
+  viewHTML: () => void;
   exportHTML: () => string;
   setBlocks: React.Dispatch<React.SetStateAction<any[]>>;
   setInspecting: React.Dispatch<React.SetStateAction<any>>;
@@ -16,8 +16,8 @@ type NavbarProps = {
 const Navbar: React.FC<NavbarProps> = ({
   preview,
   setPreview,
-  copyJSON,
-  copyHTML,
+  viewJSON,
+  viewHTML,
   exportHTML,
   setBlocks,
   setInspecting,
@@ -42,15 +42,15 @@ const Navbar: React.FC<NavbarProps> = ({
         <Button
           className="bg-green-600 hover:bg-green-700 text-white border-green-700"
           variant="secondary"
-          onClick={copyJSON}
+          onClick={viewJSON}
         >
           Save
         </Button>
-        <Button variant="outline" onClick={copyHTML}>
-          Copy HTML
+        <Button variant="outline" onClick={viewHTML}>
+          HTML
         </Button>
-        <Button variant="outline" onClick={copyJSON}>
-          Copy JSON
+        <Button variant="outline" onClick={viewJSON}>
+          JSON
         </Button>
         <Button
           variant="destructive"
