@@ -17,6 +17,10 @@ interface MainEditorCanvasProps {
   htmlPreview?: string | null;
   showHTMLPreview: boolean;
   showJSONPreview: boolean;
+  handleCopyJSON: () => void;
+  handleCopyHTML: () => void;
+  jsonCopied: boolean;
+  htmlCopied: boolean;
 }
 
 const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
@@ -34,6 +38,10 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
   htmlPreview,
   showHTMLPreview,
   showJSONPreview,
+  handleCopyJSON,
+  handleCopyHTML,
+  jsonCopied,
+  htmlCopied,
 }) => {
   return (
     <div
@@ -78,8 +86,18 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
         {/* HTML Preview */}
         {showHTMLPreview && htmlPreview && (
           <div className="w-full h-full">
-            <div className="bg-gray-100 p-2 rounded-t-md border-b">
+            <div className="bg-gray-100 p-2 rounded-t-md border-b flex justify-between items-center">
               <h3 className="text-sm font-medium text-gray-700">HTML Preview</h3>
+              <button
+                onClick={handleCopyHTML}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  htmlCopied
+                    ? 'bg-green-100 text-green-700 border border-green-300'
+                    : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
+                }`}
+              >
+                {htmlCopied ? '✓ Copied' : 'Copy'}
+              </button>
             </div>
             <pre className="bg-gray-50 p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 border rounded-b-md">
               {htmlPreview}
@@ -90,8 +108,18 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
         {/* JSON Preview */}
         {showJSONPreview && (
           <div className="w-full h-full">
-            <div className="bg-gray-100 p-2 rounded-t-md border-b">
+            <div className="bg-gray-100 p-2 rounded-t-md border-b flex justify-between items-center">
               <h3 className="text-sm font-medium text-gray-700">JSON Preview</h3>
+              <button
+                onClick={handleCopyJSON}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  jsonCopied
+                    ? 'bg-green-100 text-green-700 border border-green-300'
+                    : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
+                }`}
+              >
+                {jsonCopied ? '✓ Copied' : 'Copy'}
+              </button>
             </div>
             <pre className="bg-gray-50 p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 border rounded-b-md">
               {JSON.stringify(blocks, null, 2)}

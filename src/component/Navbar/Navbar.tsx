@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 type NavbarProps = {
   preview: boolean;
   setPreview: React.Dispatch<React.SetStateAction<boolean>>;
-  copyJSON: () => void;
-  copyHTML: () => void;
+  viewJSON: () => void;
+  viewHTML: () => void;
   exportHTML: () => string;
   setBlocks: React.Dispatch<React.SetStateAction<any[]>>;
   setInspecting: React.Dispatch<React.SetStateAction<any>>;
@@ -14,8 +14,8 @@ type NavbarProps = {
 const Navbar: React.FC<NavbarProps> = ({
   preview,
   setPreview,
-  copyJSON,
-  copyHTML,
+  viewJSON,
+  viewHTML,
   exportHTML,
   setBlocks,
   setInspecting,
@@ -42,21 +42,21 @@ const Navbar: React.FC<NavbarProps> = ({
         </button>
         <button
           className="px-5 py-2 rounded-md border border-green-800 bg-green-50   text-green-700 hover:bg-green-100 transition-colors "
-          onClick={copyJSON}
+          onClick={viewJSON}
         >
           Save
         </button>
         <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={copyHTML}
+          onClick={viewHTML}
         >
-          Copy HTML
+          HTML
         </button>
         <button
           className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={copyJSON}
+          onClick={viewJSON}
         >
-          Copy JSON
+          JSON
         </button>
         <button
           className="px-3 py-2 rounded-md border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
