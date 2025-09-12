@@ -1,5 +1,7 @@
 import { Block } from '@/app/email-editor/page';
 import React, { useState, JSX } from 'react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface InspectorProps {
   block: Block | null;
@@ -40,12 +42,12 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
   // Helper for block style fields
   const blockField = (label: string, input: JSX.Element) => (
     <div className="mb-3">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium mb-1">{label}</label>
       {input}
     </div>
   );
   return (
-    <div className="w-75 border-l border-gray-200 p-0 bg-white flex flex-col" style={{ height: '100%' }}>
+    <div className="w-75 border-l p-0 bg-background flex flex-col" style={{ height: '100%' }}>
       {/* Tabs */}
       <div className="flex border-b bg-gray-50">
         <button
@@ -72,36 +74,36 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
           <>
             {blockField(
               'Backdrop Color',
-              <input
+              <Input
                 type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
+                className="w-full h-10"
                 value={globalStyle.backdropColor}
                 onChange={(e) => setGlobalStyle({ ...globalStyle, backdropColor: e.target.value })}
               />
             )}
             {blockField(
               'Canvas Color',
-              <input
+              <Input
                 type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
+                className="w-full h-10"
                 value={globalStyle.canvasColor}
                 onChange={(e) => setGlobalStyle({ ...globalStyle, canvasColor: e.target.value })}
               />
             )}
             {blockField(
               'Canvas Border Color',
-              <input
+              <Input
                 type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
+                className="w-full h-10"
                 value={globalStyle.canvasBorderColor || '#e5e7eb'}
                 onChange={(e) => setGlobalStyle({ ...globalStyle, canvasBorderColor: e.target.value })}
               />
             )}
             {blockField(
               'Canvas Border Radius (px)',
-              <input
+              <Input
                 type="number"
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full"
                 value={globalStyle.canvasBorderRadius || 0}
                 min={0}
                 max={50}
@@ -110,9 +112,9 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
             )}
             {blockField(
               'Padding (px)',
-              <input
+              <Input
                 type="number"
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full"
                 value={globalStyle.padding}
                 min={0}
                 max={100}
@@ -135,9 +137,9 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
             )}
             {blockField(
               'Text Color',
-              <input
+              <Input
                 type="color"
-                className="w-full h-10 border border-gray-300 rounded-md"
+                className="w-full h-10"
                 value={globalStyle.textColor}
                 onChange={(e) => setGlobalStyle({ ...globalStyle, textColor: e.target.value })}
               />

@@ -69,13 +69,13 @@ const defaultTemplates: Template[] = [
 ];
 export default function Sidebar({ onTemplateSelect }: SidebarProps) {
   return (
-    <div className="w-72 border-r border-gray-200 p-4 bg-white flex flex-col" style={{ height: '100%' }}>
-      <div className="font-bold mb-3 text-gray-800">Templates</div>
+    <div className="w-72 border-r p-4 bg-background flex flex-col" style={{ height: '100%' }}>
+      <div className="font-semibold mb-3">Templates</div>
       <ul className="flex flex-col gap-2">
         {defaultTemplates.map((tpl) => (
           <li
             key={tpl.name}
-            className="flex items-center justify-between px-3 py-2 rounded cursor-pointer hover:bg-blue-50 transition-colors font-medium text-gray-700 border border-transparent hover:border-blue-200"
+            className="flex items-center justify-between px-3 py-2 rounded-md cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors font-medium"
             onClick={() => onTemplateSelect(tpl.blocks)}
             style={{ background: tpl.name === 'Blank' ? '#f9fafb' : '' }}
           >
@@ -84,7 +84,7 @@ export default function Sidebar({ onTemplateSelect }: SidebarProps) {
           </li>
         ))}
       </ul>
-      <div className="mt-4 text-gray-500 text-xs">
+      <div className="mt-4 text-muted-foreground text-xs">
         Choose a template to quickly start your email. You can fully customize the content after loading a template.
       </div>
     </div>

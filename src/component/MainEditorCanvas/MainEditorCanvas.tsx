@@ -1,6 +1,8 @@
 import React from 'react';
 import AddBlockMenu from '@/component/BlockMenu/BlockMenu';
 import { Block } from '@/app/email-editor/page';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 interface MainEditorCanvasProps {
   blocks: Block[];
@@ -42,28 +44,25 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
       onDrop={(e) => handleDrop(e)}
       style={{ height: '100%' }}
     >
-      {/* View Mode Switcher (moved here) */}
       <div className="flex gap-2 items-center mb-4">
-        <button
-          className={`p-2 rounded-full border ${
-            viewMode === 'website' ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-300'
-          } hover:bg-blue-50 transition-colors`}
+        <Button
+          variant={viewMode === 'website' ? 'secondary' : 'outline'}
+          size="icon"
           onClick={() => setViewMode('website')}
           title="Website View"
         >
-          <img src="/website.svg" alt="Website" className="w-6 h-6" />
-        </button>
-        <button
-          className={`p-2 rounded-full border ${
-            viewMode === 'mobile' ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-300'
-          } hover:bg-blue-50 transition-colors`}
+          <img src="/website.svg" alt="Website" className="w-5 h-5" />
+        </Button>
+        <Button
+          variant={viewMode === 'mobile' ? 'secondary' : 'outline'}
+          size="icon"
           onClick={() => setViewMode('mobile')}
           title="Mobile View"
         >
-          <img src="/mobile.svg" alt="Mobile" className="w-6 h-6" />
-        </button>
+          <img src="/mobile.svg" alt="Mobile" className="w-5 h-5" />
+        </Button>
       </div>
-      <div
+      <Card
         className={`min-h-96 w-full ${viewMode === 'mobile' ? 'max-w-xs' : 'max-w-3xl'}`}
         style={{
           background: globalStyle.canvasColor,
@@ -81,7 +80,7 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
             <div className="bg-gray-100 p-2 rounded-t-md border-b">
               <h3 className="text-sm font-medium text-gray-700">HTML Preview</h3>
             </div>
-            <pre className="bg-gray-50 p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 border rounded-b-md">
+            <pre className="bg-accent p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 rounded-b-md">
               {htmlPreview}
             </pre>
           </div>
@@ -93,7 +92,7 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
             <div className="bg-gray-100 p-2 rounded-t-md border-b">
               <h3 className="text-sm font-medium text-gray-700">JSON Preview</h3>
             </div>
-            <pre className="bg-gray-50 p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 border rounded-b-md">
+            <pre className="bg-accent p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 rounded-b-md">
               {JSON.stringify(blocks, null, 2)}
             </pre>
           </div>
@@ -117,16 +116,9 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
                 {/* Add Block Button */}
                 <div className="flex justify-center mt-4">
                   <div className="relative inline-block">
-                    <div className="flex">
-                      <button
-                        className="px-3.5 py-2.5 rounded-md border hover:bg-gray-100 border-gray-300 text-center text-gray-500 transition-colors"
-                        onClick={() => setShowAddMenu(!showAddMenu)}
-                        aria-expanded={showAddMenu}
-                      >
-                        +
-                      </button>
-                    </div>
-
+                    <Button variant="outline" onClick={() => setShowAddMenu(!showAddMenu)} aria-expanded={showAddMenu}>
+                      + Add Block
+                    </Button>
                     {showAddMenu && (
                       <AddBlockMenu addBlock={addBlock} show={showAddMenu} onClose={() => setShowAddMenu(false)} />
                     )}
@@ -136,7 +128,7 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
             )}
           </>
         )}
-      </div>
+      </Card>
     </div>
   );
 };

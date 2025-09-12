@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type NavbarProps = {
   preview: boolean;
@@ -24,42 +26,34 @@ const Navbar: React.FC<NavbarProps> = ({
   const [emailName, setEmailName] = useState('Untitled');
 
   return (
-    <nav className="w-full flex items-center justify-between px-6 py-3 bg-white shadow-sm">
-      {/* Editable Email Name */}
-      <input
-        className="text-lg font-semibold bg-transparent border-none outline-none px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-        value={emailName}
-        onChange={(e) => setEmailName(e.target.value)}
-        style={{ minWidth: 120 }}
-      />
-      {/* Action Buttons */}
+    <nav className="w-full flex items-center justify-between px-6 py-3 bg-background border-b">
+      <div className="flex items-center gap-2">
+        <Input
+          value={emailName}
+          onChange={(e) => setEmailName(e.target.value)}
+          placeholder="Untitled"
+          className="h-9 text-base font-semibold w-[180px]"
+        />
+      </div>
       <div className="flex gap-2">
-        <button
-          className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={() => togglePreview(!preview)}
-        >
+        <Button variant="outline" onClick={() => togglePreview(!preview)}>
           {preview ? 'Edit Mode' : 'Preview'}
-        </button>
-        <button
-          className="px-5 py-2 rounded-md border border-green-800 bg-green-50   text-green-700 hover:bg-green-100 transition-colors "
+        </Button>
+        <Button
+          className="bg-green-600 hover:bg-green-700 text-white border-green-700"
+          variant="secondary"
           onClick={copyJSON}
         >
           Save
-        </button>
-        <button
-          className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={copyHTML}
-        >
+        </Button>
+        <Button variant="outline" onClick={copyHTML}>
           Copy HTML
-        </button>
-        <button
-          className="px-3 py-2 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-          onClick={copyJSON}
-        >
+        </Button>
+        <Button variant="outline" onClick={copyJSON}>
           Copy JSON
-        </button>
-        <button
-          className="px-3 py-2 rounded-md border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
+        </Button>
+        <Button
+          variant="destructive"
           onClick={() => {
             if (confirm('Are you sure you want to clear all blocks?')) {
               setBlocks([]);
@@ -69,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({
           }}
         >
           Clear Blocks
-        </button>
+        </Button>
       </div>
     </nav>
   );
