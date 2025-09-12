@@ -29,7 +29,7 @@ export type Block = {
   borderColor?: string;
   borderWidth?: number;
   columnCount?: number; // for columns block
-  columnGap?: number; // for columns block
+  columnGap?: number;
   columns?: Block[][]; // only for type === 'columns'
   children?: Block[];
 };
@@ -88,12 +88,12 @@ export default function TailwindEmailBuilder(): JSX.Element {
           ? 'Click Me'
           : '',
       url: type === 'button' ? 'https://example.com' : undefined,
-      backgroundColor: type === 'button' ? '#007bff' : type === 'container' ? '#f8f9fa' : undefined,
+      backgroundColor: type === 'button' ? '#007bff' : type === 'container' ? '#ffffff' : undefined,
       textColor: type === 'button' ? '#ffffff' : undefined,
       thickness: type === 'divider' ? 1 : undefined,
       dividerColor: type === 'divider' ? '#e5e7eb' : undefined,
       spacerHeight: type === 'spacer' ? 20 : undefined,
-      borderColor: type === 'container' || type === 'columns' ? '#e5e7eb' : undefined,
+      borderColor: type === 'container' || type === 'columns' ? '#ffffff' : undefined,
       borderWidth: type === 'container' || type === 'columns' ? 1 : undefined,
       padding: type === 'container' || type === 'columns' ? 16 : undefined,
       columnCount: type === 'columns' ? 2 : undefined,
@@ -138,8 +138,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
           return { ...block, children };
         }
       }
-
-      // 🔑 Only recurse if this is not the parent
+      // Recursively search in children and columns
       if (block.children) {
         return {
           ...block,
@@ -276,46 +275,147 @@ export default function TailwindEmailBuilder(): JSX.Element {
   };
 
   // export html
+  // Replace the existing exportHTML function with this improved version
   const exportHTML = () => {
-    const html = blocks
-      .map((b) => {
-        if (b.type === 'heading') {
-          const level = Math.min(3, Math.max(1, b.level || 1));
-          return `<h${level} style="font-weight: bold; margin-bottom: 1rem; color: ${globalStyle.textColor}; ${
-            b.level === 1 ? 'font-size: 1.5rem;' : b.level === 2 ? 'font-size: 1.25rem;' : 'font-size: 1.125rem;'
-          }">${escapeHtml(b.content || '')}</h${level}>`;
+    const renderBlockToHTML = (block: Block): string => {
+      if (block.type === 'heading') {
+        const level = Math.min(3, Math.max(1, block.level || 1));
+        const fontSize = block.fontSize || (block.level === 1 ? 32 : block.level === 2 ? 24 : 20);
+        const style = `
+        font-weight: ${block.fontWeight || 'bold'};
+        margin: ${block.margin || 0}px 0;
+        color: ${block.textColor || globalStyle.textColor};
+        font-size: ${fontSize}px;
+        text-align: ${block.alignment || 'left'};
+        line-height: ${block.lineHeight || 1.2};
+        font-family: ${globalStyle.fontFamily};
+        border-radius: ${block.borderRadius || 0}px;
+        padding: ${block.padding || 0}px;
+      `.trim();
+        return `<h${level} style="${style}">${escapeHtml(block.content || '')}</h${level}>`;
+      }
+
+      if (block.type === 'paragraph') {
+        const contentWithBreaks = escapeHtml(block.content || '').replace(/\n/g, '<br>');
+        const style = `
+        margin: ${block.margin || 0}px 0 1rem 0;
+        line-height: ${block.lineHeight || 1.5};
+        color: ${block.textColor || globalStyle.textColor};
+        font-size: ${block.fontSize || 16}px;
+        text-align: ${block.alignment || 'left'};
+        font-weight: ${block.fontWeight || 'normal'};
+        font-family: ${globalStyle.fontFamily};
+        padding: ${block.padding || 0}px;
+        border-radius: ${block.borderRadius || 0}px;
+      `.trim();
+        return `<p style="${style}">${contentWithBreaks}</p>`;
+      }
+
+      if (block.type === 'image') {
+        const style = `
+        width: ${block.width ? `${block.width}px` : 'auto'};
+        border-radius: ${block.borderRadius || 0}px;
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: ${block.margin || 0}px auto;
+      `.trim();
+        const containerStyle = `text-align: ${block.alignment || 'center'}; margin: ${block.margin || 0}px 0;`;
+        return `<div style="${containerStyle}"><img src="${block.content || ''}" alt="${escapeHtml(
+          block.alt || ''
+        )}" style="${style}" /></div>`;
+      }
+
+      if (block.type === 'button') {
+        const style = `
+        background-color: ${block.backgroundColor || '#007bff'};
+        color: ${block.textColor || '#ffffff'};
+        padding: ${block.padding || 12}px 24px;
+        text-decoration: none;
+        border-radius: ${block.borderRadius || 4}px;
+        display: inline-block;
+        border: none;
+        cursor: pointer;
+        font-weight: ${block.fontWeight || '500'};
+        font-size: ${block.fontSize || 16}px;
+        font-family: ${globalStyle.fontFamily};
+        margin: ${block.margin || 0}px 0;
+        word-wrap: break-word;
+        white-space: normal;
+      `.trim();
+        const containerStyle = `text-align: ${block.alignment || 'left'}; margin: ${block.margin || 0}px 0;`;
+        return `<div style="${containerStyle}"><a href="${block.url || '#'}" style="${style}">${escapeHtml(
+          block.content || 'Button'
+        )}</a></div>`;
+      }
+
+      if (block.type === 'divider') {
+        const style = `
+        height: ${block.thickness || 1}px;
+        background-color: ${block.dividerColor || '#e5e7eb'};
+        border: none;
+        margin: ${block.margin || 20}px 0;
+      `.trim();
+        return `<hr style="${style}" />`;
+      }
+
+      if (block.type === 'spacer') {
+        const style = `
+        height: ${block.spacerHeight || 20}px;
+        margin: ${block.margin || 0}px 0;
+      `.trim();
+        return `<div style="${style}"></div>`;
+      }
+
+      if (block.type === 'container') {
+        const containerStyle = `
+        background-color: ${block.backgroundColor || 'transparent'};
+        border-color: ${block.borderColor || '#e5e7eb'};
+        border-width: ${block.borderWidth || 1}px;
+        border-style: solid;
+        border-radius: ${block.borderRadius || 4}px;
+        padding: ${block.padding || 16}px;
+        margin: ${block.margin || 0}px 0;
+        min-height: 24px;
+      `.trim();
+
+        const childrenHTML = block.children ? block.children.map((child) => renderBlockToHTML(child)).join('\n') : '';
+        return `<div style="${containerStyle}">${childrenHTML}</div>`;
+      }
+
+      if (block.type === 'columns') {
+        const containerStyle = `
+        background-color: ${block.backgroundColor || '#ffffff'};
+        ${
+          block.borderColor && block.borderWidth
+            ? `border-color: ${block.borderColor}; border-width: ${block.borderWidth}px; border-style: solid;`
+            : 'border: none;'
         }
-        if (b.type === 'paragraph') {
-          // Convert line breaks to <br> tags for HTML
-          const contentWithBreaks = escapeHtml(b.content || '').replace(/\n/g, '<br>');
-          return `<p style="margin-bottom: 1rem; line-height: 1.625; color: ${globalStyle.textColor};">${contentWithBreaks}</p>`;
-        }
-        if (b.type === 'image') {
-          const w = b.width ? ` width="${b.width}"` : '';
-          const alt = b.alt ? ` alt="${escapeHtml(b.alt)}"` : ' alt=""';
-          return `<img src="${b.content || ''}"${alt}${w} />`;
-        }
-        if (b.type === 'button') {
-          // FIXED: Added display: block and margin-bottom to ensure buttons appear on separate lines
-          const style = `background-color: ${b.backgroundColor || '#007bff'}; color: ${
-            b.textColor || '#ffffff'
-          }; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: block; border: none; cursor: pointer; font-weight: 500; word-wrap: break-word; white-space: normal; max-width: fit-content; margin-bottom: 10px;`;
-          return `<a href="${b.url || '#'}" style="${style}">${escapeHtml(b.content || 'Button')}</a>`;
-        }
-        if (b.type === 'divider') {
-          const style = `height: ${b.thickness || 1}px; background-color: ${
-            b.dividerColor || '#e5e7eb'
-          }; border: none; margin: 20px 0;`;
-          return `<hr style="${style}" />`;
-        }
-        if (b.type === 'spacer') {
-          const style = `height: ${b.spacerHeight || 20}px;`;
-          return `<div style="${style}"></div>`;
-        }
-        return '';
-      })
-      .join('\n');
-    return `<!doctype html>\n<html>\n<body>\n${html}\n</body>\n</html>`;
+        border-radius: ${block.borderRadius || 4}px;
+        padding: ${block.padding || 16}px;
+        margin: ${block.margin || 0}px 0;
+        display: grid;
+        grid-template-columns: repeat(${block.columnCount || 2}, 1fr);
+        gap: ${block.columnGap || 16}px;
+        min-height: 80px;
+      `.trim();
+
+        const columnsHTML = Array.from({ length: block.columnCount || 2 })
+          .map((_, colIndex) => {
+            const columnChildren = block.columns?.[colIndex] || [];
+            const childrenHTML = columnChildren.map((child) => renderBlockToHTML(child)).join('\n');
+            return `<div style="min-height: 80px;">${childrenHTML}</div>`;
+          })
+          .join('\n');
+
+        return `<div style="${containerStyle}">${columnsHTML}</div>`;
+      }
+
+      return '';
+    };
+
+    const html = blocks.map(renderBlockToHTML).join('\n');
+    return `<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>\n<body style="margin: 0; padding: 20px; background-color: ${globalStyle.canvasColor}; color: ${globalStyle.textColor}; font-family: ${globalStyle.fontFamily};">\n${html}\n</body>\n</html>`;
   };
 
   // copy JSON
@@ -414,46 +514,42 @@ export default function TailwindEmailBuilder(): JSX.Element {
         </div>
       )}
       {block.type === 'heading' && (
-        <div>
-          <input
-            className={`w-full px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-            disabled={preview}
-            value={block.content || ''}
-            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-            style={{
-              textAlign: block.alignment,
-              fontSize: block.fontSize,
-              fontWeight: block.fontWeight,
-              lineHeight: block.lineHeight,
-              margin: block.margin !== undefined ? block.margin : undefined,
-              color: block.textColor,
-            }}
-          />
-        </div>
+        <input
+          className="w-full px-2.5 py-2 rounded-md  focus:outline-none  focus:border-transparent"
+          value={block.content || ''}
+          onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+          style={{
+            textAlign: block.alignment || 'left',
+            fontSize: `${block.fontSize || (block.level === 1 ? 32 : block.level === 2 ? 24 : 20)}px`,
+            fontWeight: block.fontWeight || 'bold',
+            lineHeight: block.lineHeight || 1.2,
+            color: block.textColor || globalStyle.textColor,
+            fontFamily: globalStyle.fontFamily,
+            backgroundColor: 'transparent',
+          }}
+        />
       )}
 
       {/* Paragraph Block */}
       {block.type === 'paragraph' && (
-        <div>
-          <textarea
-            className="w-full min-h-20 px-2.5 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-            disabled={preview}
-            value={block.content || ''}
-            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-            style={{
-              textAlign: block.alignment,
-              fontSize: block.fontSize,
-              lineHeight: block.lineHeight,
-              margin: block.margin !== undefined ? block.margin : undefined,
-              color: block.textColor,
-            }}
-          />
-        </div>
+        <textarea
+          className="w-full min-h-20 px-2.5 py-2 rounded-md focus:outline-none focus:border-transparent resize-y"
+          value={block.content || ''}
+          onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+          style={{
+            textAlign: block.alignment || 'left',
+            fontSize: `${block.fontSize || 16}px`,
+            lineHeight: block.lineHeight || 1.5,
+            color: block.textColor || globalStyle.textColor,
+            fontFamily: globalStyle.fontFamily,
+            backgroundColor: 'transparent',
+          }}
+        />
       )}
 
       {/* Image Block */}
       {block.type === 'image' && (
-        <div>
+        <div style={{ margin: `${block.margin || 0}px 0` }}>
           {!preview && (
             <div className="mb-2">
               <input
@@ -469,28 +565,31 @@ export default function TailwindEmailBuilder(): JSX.Element {
           )}
 
           {block.content ? (
-            <img
-              src={block.content}
-              alt={block.alt || ''}
-              className="max-w-full block"
-              style={{
-                width: block.width ? `${block.width}px` : 'auto',
-                borderRadius: block.borderRadius,
-                margin: block.margin !== undefined ? block.margin : undefined,
-                display: block.alignment === 'center' ? 'block' : undefined,
-                marginLeft: block.alignment === 'center' ? 'auto' : block.alignment === 'right' ? 'auto' : undefined,
-                marginRight: block.alignment === 'center' ? 'auto' : block.alignment === 'left' ? 'auto' : undefined,
-              }}
-            />
+            <div style={{ textAlign: block.alignment || 'center' }}>
+              <img
+                src={block.content}
+                alt={block.alt || ''}
+                style={{
+                  width: block.width ? `${block.width}px` : 'auto',
+                  borderRadius: `${block.borderRadius || 0}px`,
+                  maxWidth: '100%',
+                  height: 'auto',
+                  display: 'inline-block',
+                }}
+              />
+            </div>
           ) : (
             <div className="p-3 border border-dashed border-gray-300 rounded-md text-gray-500">No image selected</div>
           )}
         </div>
       )}
-
-      {/* Button Block */}
       {block.type === 'button' && (
-        <div>
+        <div
+          style={{
+            textAlign: block.alignment || 'left',
+            margin: `${block.margin || 0}px 0`,
+          }}
+        >
           {preview ? (
             <button
               className="px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity cursor-pointer inline-block"
@@ -521,6 +620,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                 padding: block.padding,
                 fontSize: block.fontSize,
                 fontWeight: block.fontWeight,
+                fontFamily: globalStyle.fontFamily,
                 margin: block.margin !== undefined ? block.margin : undefined,
               }}
             >
@@ -532,37 +632,38 @@ export default function TailwindEmailBuilder(): JSX.Element {
 
       {/* Divider Block */}
       {block.type === 'divider' && (
-        <div>
-          <hr
-            style={{
-              height: block.thickness,
-              backgroundColor: block.dividerColor,
-              border: 'none',
-              margin: block.margin !== undefined ? block.margin : undefined,
-            }}
-          />
-        </div>
+        <hr
+          style={{
+            height: `${block.thickness || 1}px`,
+            backgroundColor: block.dividerColor || '#e5e7eb',
+            border: 'none',
+            margin: `${block.margin || 20}px 0`,
+          }}
+        />
       )}
 
-      {/* Spacer Block */}
       {block.type === 'spacer' && (
-        <div>
-          <div
-            className="bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm"
-            style={{
-              height: block.spacerHeight,
-              margin: block.margin !== undefined ? block.margin : undefined,
-            }}
-          >
-            {!preview && `${block.spacerHeight || 20}px`}
-          </div>
+        <div
+          style={{
+            height: `${block.spacerHeight || 20}px`,
+            margin: `${block.margin || 0}px 0`,
+          }}
+        >
+          {!preview && (
+            <div
+              className="bg-gray-100 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm"
+              style={{ height: '100%' }}
+            >
+              {`${block.spacerHeight || 20}px spacer`}
+            </div>
+          )}
         </div>
       )}
       {/* Container Block */}
       {block.type === 'container' && (
         <div>
           <div
-            className="min-h-24 rounded-md"
+            className="min-h-24 rounded-md "
             style={{
               backgroundColor: block.backgroundColor || 'transparent',
               borderColor: block.borderColor || '#e5e7eb',
@@ -573,21 +674,23 @@ export default function TailwindEmailBuilder(): JSX.Element {
               margin: `${block.margin || 0}px 0`,
             }}
           >
-            {block.children && block.children.length > 0 ? (
-              <>
-                {block.children.map((child, childIndex) => renderBlock(child, childIndex, true, block.id))}
-                {!preview && (
-                  <div className="flex justify-center mt-4">
-                    <AddButton onAdd={addBlock} parentId={block.id} />
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center text-gray-400 py-8">
-                <p className="mb-4">Empty container - click + to add content</p>
-                {!preview && <AddButton onAdd={addBlock} parentId={block.id} />}
-              </div>
-            )}
+            <div className="border border-dashed border-gray-300 rounded p-2 m-1">
+              {block.children && block.children.length > 0 ? (
+                <>
+                  {block.children.map((child, childIndex) => renderBlock(child, childIndex, true, block.id))}
+                  {!preview && (
+                    <div className="flex justify-center mt-4 ">
+                      <AddButton onAdd={addBlock} parentId={block.id} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-gray-400 py-8 ">
+                  <p className="mb-4">Empty container - click + to add content</p>
+                  {!preview && <AddButton onAdd={addBlock} parentId={block.id} />}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

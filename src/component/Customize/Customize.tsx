@@ -196,17 +196,7 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                     onChange={(e) => updateBlock(block.id, { textColor: e.target.value })}
                   />
                 )}
-                {blockField(
-                  'Font Size (px)',
-                  <input
-                    type="number"
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    value={block.fontSize || 24}
-                    min={10}
-                    max={72}
-                    onChange={(e) => updateBlock(block.id, { fontSize: parseInt(e.target.value) || 24 })}
-                  />
-                )}
+
                 {blockField(
                   'Font Weight',
                   <select
@@ -644,7 +634,7 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                     <option value={1}>1 Column</option>
                     <option value={2}>2 Columns</option>
                     <option value={3}>3 Columns</option>
-                    <option value={4}>4 Columns</option>
+                    {/* <option value={4}>4 Columns</option> */}
                   </select>
                 )}
                 {blockField(
@@ -663,7 +653,7 @@ const Customize: React.FC<InspectorProps> = ({ block, updateBlock, close, global
                   <input
                     type="color"
                     className="w-full h-10 border border-gray-300 rounded-md"
-                    value={block.backgroundColor || 'transparent'}
+                    value={block.backgroundColor || '#ffffff'}
                     onChange={(e) => updateBlock(block.id, { backgroundColor: e.target.value })}
                   />
                 )}
