@@ -84,50 +84,6 @@ const MainEditorCanvas: React.FC<MainEditorCanvasProps> = ({
           ...(viewMode === 'mobile' ? { minHeight: '600px' } : {}),
         }}
       >
-        {/* HTML Preview */}
-        {showHTMLPreview && htmlPreview && (
-          <div className="w-full h-full">
-            <div className="bg-gray-100 p-2 rounded-t-md border-b flex justify-between items-center">
-              <h3 className="text-sm font-medium text-gray-700">HTML Preview</h3>
-              <Button
-                onClick={handleCopyHTML}
-                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                  htmlCopied
-                    ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
-                    : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
-                }`}
-              >
-                {htmlCopied ? '✓ Copied' : 'Copy'}
-              </Button>
-            </div>
-            <pre className="bg-accent p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 rounded-b-md">
-              {htmlPreview}
-            </pre>
-          </div>
-        )}
-
-        {/* JSON Preview */}
-        {showJSONPreview && (
-          <div className="w-full h-full">
-            <div className="bg-gray-100 p-2 rounded-t-md border-b flex justify-between items-center">
-              <h3 className="text-sm font-medium text-gray-700">JSON Preview</h3>
-              <Button
-                onClick={handleCopyJSON}
-                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                  jsonCopied
-                    ? 'bg-green-100 text-green-700 border border-green-300 hover:bg-green-200'
-                    : 'bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200'
-                }`}
-              >
-                {jsonCopied ? '✓ Copied' : 'Copy'}
-              </Button>
-            </div>
-            <pre className="bg-accent p-4 overflow-auto text-xs font-mono whitespace-pre-wrap max-h-96 rounded-b-md">
-              {JSON.stringify(blocks, null, 2)}
-            </pre>
-          </div>
-        )}
-
         {/* Normal Preview/Edit Mode */}
         {!showHTMLPreview && !showJSONPreview && (
           <>

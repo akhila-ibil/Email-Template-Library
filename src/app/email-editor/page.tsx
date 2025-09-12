@@ -832,7 +832,7 @@ export default function TailwindEmailBuilder(): JSX.Element {
                   </Button>
                 </div>
                 {/* Code Preview */}
-                <pre className="flex-1 bg-gray-900 text-green-200 p-4 overflow-auto whitespace-pre-wrap">
+                <pre className="flex-1 bg-gray-100 text-red-900 p-4 overflow-auto whitespace-pre-wrap">
                   {htmlPreview}
                 </pre>
               </>
@@ -851,8 +851,15 @@ export default function TailwindEmailBuilder(): JSX.Element {
                     {jsonCopied ? '✓ Copied' : 'Copy'}
                   </Button>
                 </div>
-                <pre className="flex-1 bg-gray-900 text-yellow-200 p-4 overflow-auto whitespace-pre-wrap">
-                  {JSON.stringify(blocks, null, 2)}
+                <pre className="flex-1 bg-gray-100 text-red-900 p-4 overflow-auto whitespace-pre-wrap">
+                  {JSON.stringify(
+                    {
+                      blocks: blocks,
+                      globalStyle: globalStyle,
+                    },
+                    null,
+                    2
+                  )}
                 </pre>
               </>
             ) : (
